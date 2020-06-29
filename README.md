@@ -41,7 +41,7 @@ Examples:
   - before defaulted parameters, which themselfes are before required function parameters
 - `func handle(element: Element,` **`context: FrameworkContext`** `, onError: (Error) -> (), onComplete: (() -> ())? = nil)
 
-In case there are _multiple_ "framework-ish" parameters, such as passing an NIO `EventLoop` or similar, we suggest:
+In case there are _multiple_ "framework-ish" parameters, such as passing a NIO `EventLoop` or similar, we suggest:
 
 - `func perform(_ work: Work, for user: User,` _`frameworkThing: Thing, eventLoop: NIO.EventLoop,`_ **`context: BaggageContext`** `)`
   - pass the baggage as **last** of such non-domain specific parameters as it will be _by far more_ omnipresent than any specific framework parameter - as it is expected that any framework should be accepting a context if it is able to do so. While not all libraries are necessarily going to be implemented using the same frameworks.
