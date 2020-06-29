@@ -23,7 +23,7 @@ When passing baggage context explicitly we strongly suggest sticking to the foll
   1. Required non-function parameters (e.g. `(url: String)`),
   2. Defaulted non-function parameters (e.g. `(mode: Mode = .default)`),
   3. Required function parameters, including required trailing closures (e.g. `(onNext elementHandler: (Value) -> ())`),
-  4. Defaulted function parameters, including optional trailing closures (e.g. `(onComplete completionHandler: (Reason) -> ())`).
+  4. Defaulted function parameters, including optional trailing closures (e.g. `(onComplete completionHandler: (Reason) -> ()) = { _ in }`).
 - Baggage Context should be passed as: **the last parameter in the required non-function parameters group in a function declaration**.
 
 This way when reading the call side, users of these APIs can learn to "ignore" or "skim over" the context parameter and the method signature remains human-readable and “Swifty”.
