@@ -55,7 +55,7 @@ We feel it is important to preserve Swift's human-readable nature of function de
 
 When adapting an existing library/framework to support `BaggageContext` and it already has a "framework context" which is expected to be passed through "everywhere", we suggest to follow these guidelines to adopting BaggageContext:
 
-1. Add an `BaggageContext` as a property called `baggage` to your own `context` type, so that the call side for your users becomes `context.baggage` (rather than the confusing `context.context`)
+1. Add a `BaggageContext` as a property called `baggage` to your own `context` type, so that the call side for your users becomes `context.baggage` (rather than the confusing `context.context`)
 2. If you cannot or it would not make sense to carry baggage inside your framework's context object, pass (and accept (!)) the `BaggageContext` in your framework functions like follows:
   - if they take no framework context, accept a `context: BaggageContext` which is the same guideline as for all other cases
   - if they already _must_ take a context object and you are out of words (or your API already accepts your framework context as "context"), pass the baggage as **last** parameter (see above) yet call the parameter `baggage` to disambiguate your `context` object from the `baggage` context object.
