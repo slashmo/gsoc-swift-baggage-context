@@ -1,3 +1,16 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the Swift Baggage Context open source project
+//
+// Copyright (c) 2020 Moritz Lang and the Swift Baggage Context project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+
 /// A `BaggageContext` is a heterogeneous storage type with value semantics for keyed values in a type-safe
 /// fashion. Its values are uniquely identified via `BaggageContextKey`s. These keys also dictate the type of
 /// value allowed for a specific key-value pair through their associated type `Value`.
