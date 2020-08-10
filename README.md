@@ -4,7 +4,7 @@
 [![CI](https://github.com/slashmo/gsoc-swift-baggage-context/workflows/CI/badge.svg)](https://github.com/slashmo/gsoc-swift-baggage-context/actions?query=workflow%3ACI)
 
 `BaggageContext` is a minimal (zero-dependency) "context" library meant to "carry" baggage (metadata) for cross-cutting tools such as tracers.
-It is purposefully not tied to any specific use-case (in the spirit of the [Tracing Plane paper](https://cs.brown.edu/~jcmace/papers/mace18universal.pdf)'s BaggageContext), however it should enable a vast majority of use cases cross-cutting tools need to support. Unlike mentioned in the paper, our `BaggageContext` does not implement its own serialization scheme (today). 
+It is purposefully not tied to any specific use-case (in the spirit of the [Tracing Plane paper](https://cs.brown.edu/~jcmace/papers/mace18universal.pdf)'s BaggageContext), however it should enable a vast majority of use cases cross-cutting tools need to support. Unlike mentioned in the paper, our `BaggageContext` does not implement its own serialization scheme (today).
 
 See https://github.com/slashmo/gsoc-swift-tracing for actual instrument types and implementations which can be used to deploy various cross-cutting instruments all reusing the same baggage type. See [SSWG meeting notes](https://gist.github.com/ktoso/4d160232407e4d5835b5ba700c73de37#swift-baggage-context--distributed-tracing) for more information.
 
