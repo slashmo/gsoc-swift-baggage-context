@@ -78,7 +78,7 @@ final class LoggingBaggageContextCarrierTests: XCTestCase {
         context.logger.info("Hello")
 
         logging.history.assertExist(level: .info, message: "Hello", metadata: [
-            "secondIDExplicitlyNamed": "set on baggage"
+            "secondIDExplicitlyNamed": "set on baggage",
         ])
     }
 }
