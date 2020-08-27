@@ -68,12 +68,12 @@ final class LoggingBaggageContextCarrierTests: XCTestCase {
     func test_ContextWithLogger_log_prefersBaggageContextOverExistingLoggerMetadata() {
         let baggage = BaggageContext()
         let logging = TestLogging()
-        let logger = Logger(label: "TheLogger", factory: { label in logging.make(label: label) })
+        var logger = Logger(label: "TheLogger", factory: { label in logging.make(label: label) })
+        logger[metadataKey: "secondIDExplicitlyNamed"] = "set on logger"
 
         var context: LoggingBaggageContextCarrier = ExampleFrameworkContext(context: baggage, logger: logger)
 
         context.secondTestID = "set on baggage"
-        context.logger[metadataKey: "secondIDExplicitlyNamed"] = "set on logger"
 
         context.logger.info("Hello")
 
