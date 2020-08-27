@@ -68,6 +68,11 @@ public struct BaggageContext: BaggageContextProtocol {
 }
 
 extension BaggageContext: CustomStringConvertible {
+    /// A context's description prints only keys of the contained values.
+    /// This is in order to prevent spilling a lot of detailed information of carried values accidentally.
+    ///
+    /// `BaggageContext`s are not intended to be printed "raw" but rather inter-operate with tracing, logging and other systems,
+    /// which can use the `forEach` function providing access to its underlying values.
     public var description: String {
         return "\(type(of: self).self)(keys: \(self._storage.map { $0.key.name }))"
     }
