@@ -19,8 +19,8 @@ import Logging
 
 /// Proxying log handler which adds `BaggageContext` as metadata when log events are to be emitted.
 public struct BaggageMetadataLogHandler: LogHandler {
-    var underlying: Logger
-    let context: BaggageContext
+    private var underlying: Logger
+    private let context: BaggageContext
 
     public init(logger underlying: Logger, context: BaggageContext) {
         self.underlying = underlying
