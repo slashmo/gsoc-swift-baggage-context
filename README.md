@@ -36,6 +36,26 @@ dependencies: [
 instrumentation work, all parties involved operate on the same `BaggageContext` type. These are the three common
 parties, in no specific order, and guidance on how to use `BaggageContext`:
 
+### End Users - explicit context passing
+
+You'll likely interact with some API that takes a context. In most cases you already have a context at hand so you
+should pass that along. If you're certain you don't have a context at hand, pass along an empty one after thinking about
+why that's the case.
+
+**TODO**: Document the reasoning behind `.background` & `.TODO` once merged ([#26](#26))
+
+While this might seem like a burden to take on, this will allow you to immediately add instrumentation (e.g. tracing)
+once your application grows. Let's say your profiling some troublesome performance regressions. You won't have the time
+to go through the entire system to start passing contexts around.
+
+> TL;DR: You should always pass around `BaggageContext`, so that you're ready for when you need it.
+
+Once you are ready to instrument your application, you already have everything in place to get going. Instead of each
+instrument operating on its own context type they'll be using the same `BaggageContext` that you're already passing
+around to the various instrumentable libraries & frameworks you make use of, so you're free to mix & match any
+compatible instrument(s) 🙌 Check out the [swift-tracing](https://github.com/slashmo/gsoc-swift-tracing) repository for
+instructions on how to get up & running.
+
 ### Library & Framework Authors - passing context and instrumenting libraries
 
 Developers creating frameworks/libraries (e.g. NIO, gRPC, AsyncHTTPClient, ...) which benefit from being instrumented
@@ -85,26 +105,6 @@ var context = BaggageContext()
 context.traceID = "4bf92f3577b34da6a3ce929d0e0e4736"
 print(context.traceID ?? "new trace id")
 ```
-
-### End Users - explicit context passing
-
-You'll likely interact with some API that takes a context. In most cases you already have a context at hand so you
-should pass that along. If you're certain you don't have a context at hand, pass along an empty one after thinking about
-why that's the case.
-
-**TODO**: Document the reasoning behind `.background` & `.TODO` once merged ([#26](#26))
-
-While this might seem like a burden to take on, this will allow you to immediately add instrumentation (e.g. tracing)
-once your application grows. Let's say your profiling some troublesome performance regressions. You won't have the time
-to go through the entire system to start passing contexts around.
-
-> TL;DR: You should always pass around `BaggageContext`, so that you're ready for when you need it.
-
-Once you are ready to instrument your application, you already have everything in place to get going. Instead of each
-instrument operating on its own context type they'll be using the same `BaggageContext` that you're already passing
-around to the various instrumentable libraries & frameworks you make use of, so you're free to mix & match any
-compatible instrument(s) 🙌 Check out the [swift-tracing](https://github.com/slashmo/gsoc-swift-tracing) repository for
-instructions on how to get up & running.
 
 ## Context-Passing Guidelines
 
