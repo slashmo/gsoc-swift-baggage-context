@@ -36,7 +36,7 @@ dependencies: [
 instrumentation work, all parties involved operate on the same `BaggageContext` type. These are the three common
 parties, in no specific order, and guidance on how to use `BaggageContext`:
 
-### Frameworks/Libraries
+### Library & Framework Authors - passing context and instrumenting libraries
 
 Developers creating frameworks/libraries (e.g. NIO, gRPC, AsyncHTTPClient, ...) which benefit from being instrumented
 should adopt `BaggageContext` as part of their public API. AsyncHTTPClient for example might accept a context like this:
@@ -47,35 +47,29 @@ client.get(url: "https://swift.org", context: context)
 ```
 
 For more information on where to place this argument and how to name it, take a look at the
-["Context-Passing Guidelines"](#Context-Passing-Guidelines).
+[Context-Passing Guidelines](#Context-Passing-Guidelines).
 
-Generally speaking, framework developers do not care about the specific contents of the `BaggageContext` but need to
-make sure to feed it through the entire system. At cross-cutting boundaries, e.g. right before sending an HTTP
-request, they'd inject the `BaggageContext` into the HTTP headers, allowing context propagation. On the flip-sight, an
+Generally speaking, frameworks and libraries should treat baggage as an _opaque container_ and simply thread it along
+all asynchronous boundaries a call may have to go through. Libraries and frameworks should not attempt to reuse context
+as a means of passing values that they need for "normal" operation.
+
+At cross-cutting boundaries, e.g. right before sending an HTTP
+request, they inject the `BaggageContext` into the HTTP headers, allowing context propagation. On the receiving side, an
 HTTP server should extract the request headers into a `BaggageContext`. Injecting/extracting is part of the
 `swift-tracing` libraries [and documented in its own repository](https://github.com/slashmo/gsoc-swift-tracing).
 
-### Instrumentation
+### Instrumentation Authors - defining, injecting and extracting baggage
 
 When implementing instrumentation for cross-cutting tools, `BaggageContext` becomes the way you propagate metadata such
 as trace ids. Because each instrument knows what values might be added to the `BaggageContext` they are the ones
-creating `BaggageContextKey` types dictating the type of value associated with each key added to the context:
+creating `BaggageContextKey` types dictating the type of value associated with each key added to the context. To make
+accessing values a bit more convenient, we encourage you to add computed properties to `BaggageContextProtocol`:
 
 ```swift
 private enum TraceIDKey: BaggageContextKey {
   typealias Value = String
 }
 
-var context = BaggageContext()
-context[TraceIDKey.self] = "4bf92f3577b34da6a3ce929d0e0e4736"
-print(context[TraceIDKey.self] ?? "new trace id")
-```
-
-**TODO**: Add paragraph on why keys should be private/internal (#25)
-
-To make accessing values a bit more convenient, we encourage you to add computed properties to `BaggageContextProtocol`:
-
-```swift
 extension BaggageContextProtocol {
   var traceID: String? {
     get {
@@ -86,9 +80,13 @@ extension BaggageContextProtocol {
     }
   }
 }
+
+var context = BaggageContext()
+context.traceID = "4bf92f3577b34da6a3ce929d0e0e4736"
+print(context.traceID ?? "new trace id")
 ```
 
-### Distributed System
+### End Users - explicit context passing
 
 When creating distributed systems, each of your components will likely make use of one or more generically instrumented
 frameworks/libraries. This means you get to choose what instrument(s) to use 🙌. Check out
