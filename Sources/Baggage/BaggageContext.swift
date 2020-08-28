@@ -107,11 +107,11 @@ public protocol BaggageContextProtocol {
 /// `BaggageContextKey`s are used as keys in a `BaggageContext`. Their associated type `Value` guarantees type-safety.
 /// To give your `BaggageContextKey` an explicit name you may override the `name` property.
 ///
-/// In general, `BaggageContextKey`s should be `internal` to the part of a system using it. If you want users of your code to be able
-/// to access the value you might want to add a convenience accessor on `BaggageContext` instead of exposing your key type:
+/// In general, `BaggageContextKey`s should be `internal` to the part of a system using it. It is strongly recommended to do
+/// convenience extensions on `BaggageContextProtocol`, using the keys directly is considered an anti-pattern.
 ///
 ///     extension BaggageContextProtocol {
-///       public var sharedID: TestIDKey.Value? {
+///       var testID: TestIDKey.Value? {
 ///         get {
 ///           self[TestIDKey.self]
 ///         } set {
