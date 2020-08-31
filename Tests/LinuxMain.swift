@@ -33,6 +33,7 @@ class LinuxMainRunnerImpl: LinuxMainRunner {
    @available(*, deprecated, message: "not actually deprecated. Just deprecated to allow deprecated tests (which test deprecated functionality) without warnings")
    func run() {
        XCTMain([
+             testCase(BaggageContextCarrierTests.allTests),
              testCase(BaggageContextTests.allTests),
              testCase(LoggingBaggageContextCarrierTests.allTests),
         ])
