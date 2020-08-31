@@ -37,12 +37,8 @@ public protocol LoggingBaggageContextCarrier: BaggageContextCarrier {
     ///       private let _logger: Logger
     ///
     ///       var logger: Logger {
-    ///         get {
-    ///           return self._logger.with(context: self.baggage)
-    ///         }
-    ///         set {
-    ///           self._logger = newValue
-    ///         }
+    ///         return self._logger.with(context: self.baggage)
+    ///       }
     ///     }
     var logger: Logger { get }
 }
