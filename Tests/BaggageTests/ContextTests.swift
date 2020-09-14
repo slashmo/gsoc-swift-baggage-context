@@ -14,11 +14,11 @@
 import Baggage
 import XCTest
 
-final class BaggageContextTests: XCTestCase {
+final class ContextTests: XCTestCase {
     func testSubscriptAccess() {
         let testID = 42
 
-        var baggage = BaggageContext.background
+        var baggage = Baggage.background
         XCTAssertNil(baggage[TestIDKey.self])
 
         baggage[TestIDKey.self] = testID
@@ -31,7 +31,7 @@ final class BaggageContextTests: XCTestCase {
     func testRecommendedConvenienceExtension() {
         let testID = 42
 
-        var baggage = BaggageContext.background
+        var baggage = Baggage.background
         XCTAssertNil(baggage.testID)
 
         baggage.testID = testID
@@ -42,26 +42,26 @@ final class BaggageContextTests: XCTestCase {
     }
 
     func testEmptyBaggageDescription() {
-        XCTAssertEqual(String(describing: BaggageContext.background), "BaggageContext(keys: [])")
+        XCTAssertEqual(String(describing: Baggage.background), "Baggage(keys: [])")
     }
 
     func testSingleKeyBaggageDescription() {
-        var baggage = BaggageContext.background
+        var baggage = Baggage.background
         baggage.testID = 42
 
-        XCTAssertEqual(String(describing: baggage), #"BaggageContext(keys: ["TestIDKey"])"#)
+        XCTAssertEqual(String(describing: baggage), #"Baggage(keys: ["TestIDKey"])"#)
     }
 
     func testMultiKeysBaggageDescription() {
-        var baggage = BaggageContext.background
+        var baggage = Baggage.background
         baggage.testID = 42
         baggage[SecondTestIDKey.self] = "test"
 
         let description = String(describing: baggage)
-        XCTAssert(description.starts(with: "BaggageContext(keys: ["))
+        XCTAssert(description.starts(with: "Baggage(keys: ["), "Was: \(description)")
         // use contains instead of `XCTAssertEqual` because the order is non-predictable (Dictionary)
-        XCTAssert(description.contains("TestIDKey"))
-        XCTAssert(description.contains("ExplicitKeyName"))
+        XCTAssert(description.contains("TestIDKey"), "Was: \(description)")
+        XCTAssert(description.contains("ExplicitKeyName"), "Was: \(description)")
     }
 
     // ==== ------------------------------------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ final class BaggageContextTests: XCTestCase {
 
     func test_todo_context() {
         // the to-do context can be used to record intentions for why a context could not be passed through
-        let context = BaggageContext.TODO("#1245 Some other library should be adjusted to pass us context")
+        let context = Baggage.TODO("#1245 Some other library should be adjusted to pass us context")
         _ = context // avoid "not used" warning
 
         // TODO: Can't work with protocols; re-consider the entire carrier approach... Context being a Baggage + Logger, and a specific type.
@@ -80,7 +80,7 @@ final class BaggageContextTests: XCTestCase {
     }
 
     func test_todo_empty() {
-        let context = BaggageContext.background
+        let context = Baggage.background
         _ = context // avoid "not used" warning
 
         // TODO: Can't work with protocols; re-consider the entire carrier approach... Context being a Baggage + Logger, and a specific type.
@@ -92,21 +92,22 @@ final class BaggageContextTests: XCTestCase {
     }
 }
 
-private enum TestIDKey: BaggageContextKey {
+private enum TestIDKey: Baggage.Key {
     typealias Value = Int
 }
 
-private extension BaggageContext {
+private extension Baggage {
     var testID: Int? {
         get {
             return self[TestIDKey.self]
-        } set {
+        }
+        set {
             self[TestIDKey.self] = newValue
         }
     }
 }
 
-private enum SecondTestIDKey: BaggageContextKey {
+private enum SecondTestIDKey: Baggage.Key {
     typealias Value = String
 
     static let name: String? = "ExplicitKeyName"

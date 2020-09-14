@@ -14,7 +14,7 @@
 @testable import Baggage
 import XCTest
 
-final class BaggageContextCarrierTests: XCTestCase {
+final class FrameworkBaggageContextTests: XCTestCase {
     func testBaggageContextSubscript() {
         var carrier = TestFrameworkContext()
 
@@ -30,38 +30,44 @@ final class BaggageContextCarrierTests: XCTestCase {
     }
 
     func testBaggageContextForEach() {
-        var contents = [AnyBaggageContextKey: Any]()
+        var contents = [AnyBaggageKey: Any]()
         var carrier = TestFrameworkContext()
 
         carrier[TestKey.self] = 42
         carrier[OtherKey.self] = "test"
 
-        carrier.forEach { key, value in
+        carrier.forEachBaggageItem { key, value in
             contents[key] = value
         }
 
-        XCTAssertNotNil(contents[AnyBaggageContextKey(TestKey.self)])
-        XCTAssertEqual(contents[AnyBaggageContextKey(TestKey.self)] as? Int, 42)
-        XCTAssertNotNil(contents[AnyBaggageContextKey(OtherKey.self)])
-        XCTAssertEqual(contents[AnyBaggageContextKey(OtherKey.self)] as? String, "test")
-    }
-
-    func testBaggageContextCarriesItself() {
-        var context: BaggageContextCarrier = BaggageContext()
-
-        context.baggage[TestKey.self] = 42
-        XCTAssertEqual(context.baggage[TestKey.self], 42)
+        XCTAssertNotNil(contents[AnyBaggageKey(TestKey.self)])
+        XCTAssertEqual(contents[AnyBaggageKey(TestKey.self)] as? Int, 42)
+        XCTAssertNotNil(contents[AnyBaggageKey(OtherKey.self)])
+        XCTAssertEqual(contents[AnyBaggageKey(OtherKey.self)] as? String, "test")
     }
 }
 
-private struct TestFrameworkContext: BaggageContextCarrier {
-    var baggage = BaggageContext()
+private struct TestFrameworkContext: BaggageProtocol {
+    var baggage = Baggage()
+
+    subscript<Key: BaggageKey>(_ key: Key.Type) -> Key.Value? {
+        get {
+            return self.baggage[key]
+        }
+        set {
+            self.baggage[key] = newValue
+        }
+    }
+
+    func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
+        return try self.baggage.forEachBaggageItem(body)
+    }
 }
 
-private enum TestKey: BaggageContextKey {
+private enum TestKey: Baggage.Key {
     typealias Value = Int
 }
 
-private enum OtherKey: BaggageContextKey {
+private enum OtherKey: Baggage.Key {
     typealias Value = String
 }

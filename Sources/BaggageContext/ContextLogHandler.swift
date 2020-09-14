@@ -15,6 +15,23 @@ import Baggage
 import Logging
 
 // ==== ----------------------------------------------------------------------------------------------------------------
+// MARK: Logger with Baggage
+
+extension Logger {
+    /// Returns a logger that in addition to any explicit metadata passed to log statements,
+    /// also includes the `BaggageContext` adapted into metadata values.
+    ///
+    /// The rendering of baggage values into metadata values is performed on demand,
+    /// whenever a log statement is effective (i.e. will be logged, according to active `logLevel`).
+    public func with(_ baggage: Baggage) -> Logger {
+        return Logger(
+            label: self.label,
+            factory: { _ in BaggageMetadataLogHandler(logger: self, baggage: baggage) }
+        )
+    }
+}
+
+// ==== ----------------------------------------------------------------------------------------------------------------
 // MARK: BaggageContext (as additional Logger.Metadata) LogHandler
 
 /// Proxying log handler which adds `BaggageContext` as metadata when log events are to be emitted.
@@ -23,11 +40,11 @@ import Logging
 /// the `BaggageContext` values are preferred.
 public struct BaggageMetadataLogHandler: LogHandler {
     private var underlying: Logger
-    private let context: BaggageContext
+    private let baggage: Baggage
 
-    public init(logger underlying: Logger, context: BaggageContext) {
+    public init(logger underlying: Logger, baggage: Baggage) {
         self.underlying = underlying
-        self.context = context
+        self.baggage = baggage
     }
 
     public var logLevel: Logger.Level {
@@ -86,7 +103,7 @@ public struct BaggageMetadataLogHandler: LogHandler {
 
     private func baggageAsMetadata() -> Logger.Metadata {
         var effectiveMetadata: Logger.Metadata = [:]
-        self.context.forEach { key, value in
+        self.baggage.forEachBaggageItem { key, value in
             if let convertible = value as? String {
                 effectiveMetadata[key.name] = .string(convertible)
             } else if let convertible = value as? CustomStringConvertible {

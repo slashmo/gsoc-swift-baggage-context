@@ -21,7 +21,7 @@ import XCTest
 ///
 
 #if os(Linux) || os(FreeBSD)
-   @testable import BaggageLoggingTests
+   @testable import BaggageContextTests
    @testable import BaggageTests
 
 // This protocol is necessary to we can call the 'run' method (on an existential of this protocol)
@@ -33,9 +33,9 @@ class LinuxMainRunnerImpl: LinuxMainRunner {
    @available(*, deprecated, message: "not actually deprecated. Just deprecated to allow deprecated tests (which test deprecated functionality) without warnings")
    func run() {
        XCTMain([
-             testCase(BaggageContextCarrierTests.allTests),
              testCase(BaggageContextTests.allTests),
-             testCase(LoggingBaggageContextCarrierTests.allTests),
+             testCase(ContextTests.allTests),
+             testCase(FrameworkBaggageContextTests.allTests),
         ])
     }
 }

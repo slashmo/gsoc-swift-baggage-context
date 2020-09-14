@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "swift-baggage-context",
+    name: "swift-context",
     products: [
         .library(
             name: "Baggage",
@@ -11,9 +11,9 @@ let package = Package(
             ]
         ),
         .library(
-            name: "BaggageLogging",
+            name: "BaggageContext",
             targets: [
-                "BaggageLogging",
+                "BaggageContext",
             ]
         ),
     ],
@@ -27,7 +27,7 @@ let package = Package(
         ),
 
         .target(
-            name: "BaggageLogging",
+            name: "BaggageContext",
             dependencies: [
                 "Baggage",
                 .product(name: "Logging", package: "swift-log"),
@@ -45,10 +45,10 @@ let package = Package(
         ),
 
         .testTarget(
-            name: "BaggageLoggingTests",
+            name: "BaggageContextTests",
             dependencies: [
                 "Baggage",
-                "BaggageLogging",
+                "BaggageContext",
             ]
         ),
 
@@ -56,15 +56,14 @@ let package = Package(
         // MARK: Performance / Benchmarks
 
         .target(
-            name: "BaggageBenchmarks",
+            name: "BaggageContextBenchmarks",
             dependencies: [
-                "Baggage",
-                "BaggageLogging",
-                "BaggageBenchmarkTools",
+                "BaggageContext",
+                "BaggageContextBenchmarkTools",
             ]
         ),
         .target(
-            name: "BaggageBenchmarkTools",
+            name: "BaggageContextBenchmarkTools",
             dependencies: []
         ),
     ]
