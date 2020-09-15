@@ -14,8 +14,7 @@
 // ==== ----------------------------------------------------------------------------------------------------------------
 // MARK: Baggage
 
-/// A `Baggage` is a heterogeneous storage type with value semantics for keyed values in a type-safe
-/// fashion.
+/// A `Baggage` is a heterogeneous storage type with value semantics for keyed values in a type-safe fashion.
 ///
 /// Its values are uniquely identified via `BaggageKey`s (by type identity). These keys also dictate the type of
 /// value allowed for a specific key-value pair through their associated type `Value`.
@@ -28,10 +27,10 @@
 ///       typealias Value = String
 ///     }
 ///
-/// While defining a key, one should also immediately declare an extension on `BaggageProtocol`,
+/// While defining a key, one should also immediately declare an extension on `Baggage`,
 /// to allow convenient and discoverable ways to interact with the baggage item, the extension should take the form of:
 ///
-///     extension BaggageProtocol {
+///     extension Baggage {
 ///       var testID: TestIDKey.Value? {
 ///         get {
 ///           self[TestIDKey.self]
@@ -66,7 +65,7 @@
 /// The baggage container on purpose does not expose more functions to prevent abuse and treating it as too much of an
 /// arbitrary value smuggling container, but only make it convenient for tracing and instrumentation systems which need
 /// to access either specific or all items carried inside a baggage.
-public struct Baggage: BaggageProtocol {
+public struct Baggage {
     public typealias Key = BaggageKey
 
     private var _storage = [AnyBaggageKey: Any]()
@@ -74,15 +73,6 @@ public struct Baggage: BaggageProtocol {
     /// Internal on purpose, please use `Baggage.TODO` or `Baggage.background` to create an "empty" context,
     /// which carries more meaning to other developers why an empty context was used.
     init() {}
-
-    public var baggage: Baggage {
-        get {
-            return self
-        }
-        set {
-            self = newValue
-        }
-    }
 }
 
 extension Baggage {
@@ -156,20 +146,13 @@ extension Baggage {
     }
 }
 
-/// The `BaggageProtocol` should not directly be used in APIs.
-///
-/// Prefer accepting the `ContextProtocol` in APIs which need to accept a baggage context.
-/// If `Context` can not be used for some reason, it is preferable to accept a `Baggage` directly rather than this protocol.
-public protocol BaggageProtocol {
-    /// Get the `Baggage` container.
-    var baggage: Baggage { get set }
-
+extension Baggage {
     /// Provides type-safe access to the baggage's values.
     ///
     /// Rather than using this subscript directly, users SHOULD offer a convenience accessor to their values,
     /// using the following pattern:
     ///
-    ///     extension BaggageProtocol {
+    ///     extension Baggage {
     ///       var testID: TestIDKey.Value? {
     ///         get {
     ///           self[TestIDKey.self]
@@ -182,24 +165,6 @@ public protocol BaggageProtocol {
     ///
     /// Note that specific baggage and context types MAY (and usually do), offer also a way to set baggage values,
     /// however in the most general case it is not required, as some frameworks may only be able to offer reading.
-    subscript<Key: BaggageKey>(_ key: Key.Type) -> Key.Value? { get set }
-
-    /// Calls the given closure for each item contained in the underlying `Baggage`.
-    ///
-    /// Order of those invocations is NOT guaranteed and should not be relied on.
-    ///
-    /// - Parameter body: A closure invoked with the type erased key and value stored for the key in this baggage.
-    func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows
-}
-
-/// Writable `BaggageProtocol`.
-///
-/// - SeeAlso: `_WritableBaggageProtocol`
-public protocol _WritableBaggageProtocol: BaggageProtocol {
-    var baggage: Baggage { get set }
-}
-
-extension Baggage {
     public subscript<Key: BaggageKey>(_ key: Key.Type) -> Key.Value? {
         get {
             guard let value = self._storage[AnyBaggageKey(key)] else { return nil }
@@ -211,6 +176,11 @@ extension Baggage {
         }
     }
 
+    /// Calls the given closure for each item contained in the underlying `Baggage`.
+    ///
+    /// Order of those invocations is NOT guaranteed and should not be relied on.
+    ///
+    /// - Parameter body: A closure invoked with the type erased key and value stored for the key in this baggage.
     public func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
         try self._storage.forEach { key, value in
             try body(key, value)
@@ -232,6 +202,8 @@ extension Baggage: CustomStringConvertible {
 /// Carried automatically by a "to do" baggage context.
 /// It can be used to track where a context originated and which "to do" context must be fixed into a real one to avoid this.
 public struct TODOLocation {
-    let file: String
-    let line: UInt
+    /// Source file location where the to-do `Baggage` was created
+    public let file: String
+    /// Source line location where the to-do `Baggage` was created
+    public let line: UInt
 }

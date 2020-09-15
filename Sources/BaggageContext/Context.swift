@@ -22,22 +22,6 @@ import Logging
 ///
 /// This allows frameworks and library authors to offer APIs which compose more easily.
 /// Please refer to the "Reference Implementation" notes on each of the requirements to know how to implement this protocol correctly.
-///
-/// ### Relation to `BaggageProtocol`
-/// The `ContextProtocol` does NOT extend `BaggageProtocol`.
-///
-/// A custom context implementation however `MAY` extend both `ContextProtocol` and `BaggageProtocol`.
-/// Doing so enables a custom context to obtain the baggage protocol's capability of getting *and setting*
-/// properties on a baggage directly, like so: `myContext.traceID = "111-222"` without having to type out the baggage
-/// explicitly, as would normally be the case (`myContext.baggage.traceID = "111-222"`).
-///
-/// This difference in capabilities is purposefully designed as such, in order to allow context objects implement `ContextProtocol`
-/// without having to force them to allow _modifying_ the baggage. Some frameworks or libraries may choose to create immutable
-/// context objects, including the baggage they offer there. Users, when wanting to add more contextual information need then to
-/// perform the `asBaggageContext`, mutate the resulting context OR use the `with...` fluent-API functions to obtain a mutated context.
-///
-/// Please note that if a context does conform to `BaggageProtocol` as well, it will most-likely also offer all properties that
-/// users have provided via extensions on it - so be watchful of potential naming conflicts on variable names.
 public protocol Context {
     /// Get the `Baggage` container.
     var baggage: Baggage { get }
@@ -66,11 +50,7 @@ public protocol Context {
     ///       }
     ///     }
     var logger: Logger { get }
-
-    /// Get a baggage `Context` struct, regardless of the representation that this context protocol is implemented by.
-    var asBaggageContext: DefaultContext { get }
 }
-
 
 /// A default `Context` type.
 ///
@@ -117,23 +97,24 @@ public struct DefaultContext: Context {
         self._logger = underlying
     }
 
-    public var asBaggageContext: DefaultContext {
-        return self
+    public init<C>(context: C) where C: Context {
+        self._logger = context.logger
+        self.baggage = context.baggage
     }
 }
 
 // ==== ----------------------------------------------------------------------------------------------------------------
 // MARK: `with...` functions
 
-extension Context {
+extension DefaultContext {
     /// Fluent API allowing for modification of underlying logger when passing the context to other functions.
     ///
     /// - Parameter logger: Logger that should replace the underlying logger of this context.
     /// - Returns: new context, with the passed in `logger`
-    public func withLogger(_ logger: Logger) -> DefaultContext {
-        var copy = self
-        copy.logger = logger
-        return copy
+    public func withLogger(_ function: (inout Logger) -> Void) -> DefaultContext {
+        var logger = self._logger
+        function(&logger)
+        return .init(baggage: self.baggage, logger: logger)
     }
 
     /// Fluent API allowing for modification of underlying log level when passing the context to other functions.
@@ -202,27 +183,6 @@ extension DefaultContext {
     public static func background(logger: Logger) -> DefaultContext {
         return .init(baggage: .background, logger: logger)
     }
-
-    /// A baggage context intended as a placeholder until a real value can be passed through a function call.
-    ///
-    /// It should ONLY be used while prototyping or when the passing of the proper context is not yet possible,
-    /// e.g. because an external library did not pass it correctly and has to be fixed before the proper context
-    /// can be obtained where the TO-DO is currently used.
-    ///
-    /// ### Crashing on TO-DO context creation
-    /// You may set the `BAGGAGE_CRASH_TODOS` variable while compiling a project in order to make calls to this function crash
-    /// with a fatal error, indicating where a to-do baggage context was used. This comes in handy when wanting to ensure that
-    /// a project never ends up using with code initially was written as "was lazy, did not pass context", yet the
-    /// project requires context passing to be done correctly throughout the application. Similar checks can be performed
-    /// at compile time easily using linters (not yet implemented), since it is always valid enough to detect a to-do context
-    /// being passed as illegal and warn or error when spotted.
-    ///
-    /// - Parameters:
-    ///   - reason: Informational reason for developers, why a placeholder context was used instead of a proper one,
-    /// - Returns: Empty "to-do" baggage context which should be eventually replaced with a carried through one, or `background`.
-    public static func background(label loggerLabel: String) -> DefaultContext {
-        return .background(logger: Logger(label: loggerLabel))
-    }
 }
 
 extension DefaultContext {
@@ -256,33 +216,5 @@ extension DefaultContext {
         #else
         return .init(baggage: baggage, logger: logger)
         #endif
-    }
-
-    /// A baggage context intended as a placeholder until a real value can be passed through a function call.
-    ///
-    /// It should ONLY be used while prototyping or when the passing of the proper context is not yet possible,
-    /// e.g. because an external library did not pass it correctly and has to be fixed before the proper context
-    /// can be obtained where the TO-DO is currently used.
-    ///
-    /// ## Crashing on TO-DO context creation
-    /// You may set the `BAGGAGE_CRASH_TODOS` variable while compiling a project in order to make calls to this function crash
-    /// with a fatal error, indicating where a to-do baggage context was used. This comes in handy when wanting to ensure that
-    /// a project never ends up using with code initially was written as "was lazy, did not pass context", yet the
-    /// project requires context passing to be done correctly throughout the application. Similar checks can be performed
-    /// at compile time easily using linters (not yet implemented), since it is always valid enough to detect a to-do context
-    /// being passed as illegal and warn or error when spotted.
-    ///
-    /// ## Example
-    ///
-    ///     frameworkHandler { what in
-    ///         hello(who: "World", baggage: .TODO(label: "MyLib", "The framework XYZ should be modified to pass us a context here, and we'd pass it along"))
-    ///     }
-    ///
-    /// - Parameters:
-    ///   - label: Label to be used to obtain a globally bootstrapped `Logger` with.
-    ///   - reason: Informational reason for developers, why a placeholder context was used instead of a proper one,
-    /// - Returns: Empty "to-do" baggage context which should be eventually replaced with a carried through one, or `background`.
-    public static func TODO(label loggerLabel: String, _ reason: StaticString? = "", function: String = #function, file: String = #file, line: UInt = #line) -> DefaultContext {
-        return .TODO(logger: Logger(label: loggerLabel), reason, function: function, file: file, line: line)
     }
 }

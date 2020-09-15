@@ -42,31 +42,6 @@ final class BaggageContextTests: XCTestCase {
         )
     }
 
-    func test_ExampleMutableFrameworkContext_dumpBaggage() throws {
-        let baggage = Baggage.background
-        let logger = Logger(label: "TheLogger")
-
-        var context: Context & BaggageProtocol = ExampleMutableFrameworkContext(context: baggage, logger: logger)
-        context.testID = 42
-
-        func frameworkFunctionDumpsBaggage(param: String, context: Context & BaggageProtocol) -> String {
-            var s = ""
-            context.forEachBaggageItem { key, item in
-                s += "\(key.name): \(item)\n"
-            }
-            return s
-        }
-
-        let result = frameworkFunctionDumpsBaggage(param: "x", context: context)
-        XCTAssertEqual(
-            result,
-            """
-            TestIDKey: 42
-
-            """
-        )
-    }
-
     func test_ExampleMutableFrameworkContext_log_withBaggage() throws {
         let baggage = Baggage.background
         let logging = TestLogging()
@@ -74,11 +49,11 @@ final class BaggageContextTests: XCTestCase {
 
         var context = ExampleMutableFrameworkContext(context: baggage, logger: logger)
 
-        context.secondTestID = "value"
-        context.testID = 42
+        context.baggage.secondTestID = "value"
+        context.baggage.testID = 42
         context.logger.info("Hello")
 
-        context.testID = nil
+        context.baggage.testID = nil
         context.logger.warning("World")
 
         logging.history.assertExist(level: .info, message: "Hello", metadata: [
@@ -98,7 +73,7 @@ final class BaggageContextTests: XCTestCase {
 
         var context = ExampleMutableFrameworkContext(context: baggage, logger: logger)
 
-        context.secondTestID = "set on baggage"
+        context.baggage.secondTestID = "set on baggage"
 
         context.logger.info("Hello")
 
@@ -116,13 +91,9 @@ struct ExampleFrameworkContext: BaggageContext.Context {
         self.baggage = baggage
         self.logger = logger.with(self.baggage)
     }
-
-    var asBaggageContext: DefaultContext {
-        return .init(baggage: self.baggage, logger: self.logger)
-    }
 }
 
-struct ExampleMutableFrameworkContext: Context, BaggageProtocol {
+struct ExampleMutableFrameworkContext: Context {
     var baggage: Baggage
 
     private var _logger: Logger
@@ -147,10 +118,6 @@ struct ExampleMutableFrameworkContext: Context, BaggageProtocol {
     func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
         return try self.baggage.forEachBaggageItem(body)
     }
-
-    var asBaggageContext: DefaultContext {
-        return .init(baggage: self.baggage, logger: self._logger)
-    }
 }
 
 struct CoolFrameworkContext: BaggageContext.Context {
@@ -174,15 +141,11 @@ struct CoolFrameworkContext: BaggageContext.Context {
     func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
         return try self.baggage.forEachBaggageItem(body)
     }
-
-    var asBaggageContext: DefaultContext {
-        return .init(baggage: self.baggage, logger: self._logger)
-    }
 }
 
 struct FakeEventLoop {}
 
-private extension BaggageProtocol {
+private extension Baggage {
     var testID: Int? {
         get {
             return self[TestIDKey.self]

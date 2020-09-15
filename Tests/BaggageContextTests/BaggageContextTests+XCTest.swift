@@ -26,7 +26,6 @@ extension BaggageContextTests {
    static var allTests : [(String, (BaggageContextTests) -> () throws -> Void)] {
       return [
                 ("test_ExampleFrameworkContext_dumpBaggage", test_ExampleFrameworkContext_dumpBaggage),
-                ("test_ExampleMutableFrameworkContext_dumpBaggage", test_ExampleMutableFrameworkContext_dumpBaggage),
                 ("test_ExampleMutableFrameworkContext_log_withBaggage", test_ExampleMutableFrameworkContext_log_withBaggage),
                 ("test_ExampleMutableFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata", test_ExampleMutableFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata),
            ]

@@ -34,7 +34,7 @@ class LinuxMainRunnerImpl: LinuxMainRunner {
    func run() {
        XCTMain([
              testCase(BaggageContextTests.allTests),
-             testCase(ContextTests.allTests),
+             testCase(BaggageTests.allTests),
              testCase(FrameworkBaggageContextTests.allTests),
         ])
     }

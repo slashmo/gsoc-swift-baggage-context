@@ -14,7 +14,7 @@
 import Baggage
 import XCTest
 
-final class ContextTests: XCTestCase {
+final class BaggageTests: XCTestCase {
     func testSubscriptAccess() {
         let testID = 42
 

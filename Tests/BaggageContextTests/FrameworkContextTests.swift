@@ -12,31 +12,27 @@
 //===----------------------------------------------------------------------===//
 
 @testable import Baggage
+import BaggageContext
+import Logging
 import XCTest
 
 final class FrameworkBaggageContextTests: XCTestCase {
     func testBaggageContextSubscript() {
-        var carrier = TestFrameworkContext()
-
-        // mutate baggage context through carrier
-        carrier[TestKey.self] = 42
-        XCTAssertEqual(carrier[TestKey.self], 42)
-        XCTAssertEqual(carrier.baggage[TestKey.self], 42)
+        var context = TestFrameworkContext()
 
         // mutate baggage context directly
-        carrier.baggage[OtherKey.self] = "test"
-        XCTAssertEqual(carrier.baggage[OtherKey.self], "test")
-        XCTAssertEqual(carrier[OtherKey.self], "test")
+        context.baggage[OtherKey.self] = "test"
+        XCTAssertEqual(context.baggage.otherKey, "test")
     }
 
     func testBaggageContextForEach() {
         var contents = [AnyBaggageKey: Any]()
-        var carrier = TestFrameworkContext()
+        var context = TestFrameworkContext()
 
-        carrier[TestKey.self] = 42
-        carrier[OtherKey.self] = "test"
+        context.baggage.testKey = 42
+        context.baggage.otherKey = "test"
 
-        carrier.forEachBaggageItem { key, value in
+        context.baggage.forEachBaggageItem { key, value in
             contents[key] = value
         }
 
@@ -47,20 +43,17 @@ final class FrameworkBaggageContextTests: XCTestCase {
     }
 }
 
-private struct TestFrameworkContext: BaggageProtocol {
-    var baggage = Baggage()
+private struct TestFrameworkContext: Context {
+    var baggage = Baggage.background
 
-    subscript<Key: BaggageKey>(_ key: Key.Type) -> Key.Value? {
+    private var _logger = Logger(label: "test")
+    var logger: Logger {
         get {
-            return self.baggage[key]
+            return self._logger.with(self.baggage)
         }
         set {
-            self.baggage[key] = newValue
+            self._logger = newValue
         }
-    }
-
-    func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
-        return try self.baggage.forEachBaggageItem(body)
     }
 }
 
@@ -68,6 +61,28 @@ private enum TestKey: Baggage.Key {
     typealias Value = Int
 }
 
+extension Baggage {
+    var testKey: Int? {
+        get {
+            return self[TestKey.self]
+        }
+        set {
+            self[TestKey.self] = newValue
+        }
+    }
+}
+
 private enum OtherKey: Baggage.Key {
     typealias Value = String
+}
+
+extension Baggage {
+    var otherKey: String? {
+        get {
+            return self[OtherKey.self]
+        }
+        set {
+            self[OtherKey.self] = newValue
+        }
+    }
 }

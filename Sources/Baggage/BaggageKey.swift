@@ -14,29 +14,34 @@
 /// `BaggageKey`s are used as keys in a `Baggage`. Their associated type `Value` guarantees type-safety.
 /// To give your `BaggageKey` an explicit name you may override the `name` property.
 ///
-/// In general, `BaggageKey`s should be `internal` or `private` to the part of a system using it. It is strongly recommended to do
-/// convenience extensions on `BaggageProtocol`, using the keys directly is considered an anti-pattern.
+/// In general, `BaggageKey`s should be `internal` or `private` to the part of a system using it.
+///
+/// All access to baggage items should be performed through an accessor computed property defined as shown below:
 ///
 ///     private enum TestIDKey: Baggage.Key {
-///       typealias Value = String
-///       static var name: String? { "test-id" }
+///         typealias Value = String
+///         static var name: String? { "test-id" }
 ///     }
 ///
-///     extension BaggageProtocol {
-///       var testID: TestIDKey.Value? {
-///         get {
-///           self[TestIDKey.self]
-///         } set {
-///           self[TestIDKey.self] = newValue
+///     extension Baggage {
+///         /// This is some useful property documentation.
+///         var testID: String? {
+///             get {
+///                 self[TestIDKey.self]
+///             }
+///             set {
+///                 self[TestIDKey.self] = newValue
+///             }
 ///         }
-///       }
 ///     }
 public protocol BaggageKey {
     /// The type of `Value` uniquely identified by this key.
     associatedtype Value
 
-    /// The human-readable name of this key. Defaults to `nil`.
+    /// The human-readable name of this key.
     /// May be used as key during serialization of the baggage item.
+    ///
+    /// Defaults to `nil`.
     static var name: String? { get }
 }
 
