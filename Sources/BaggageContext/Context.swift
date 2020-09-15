@@ -28,7 +28,7 @@ public protocol Context {
 
     /// The `Logger` associated with this context carrier.
     ///
-    /// It automatically populates the loggers metadata based on the `BaggageContext` associated with this context object.
+    /// It automatically populates the loggers metadata based on the `Baggage` associated with this context object.
     ///
     /// ### Implementation note
     ///

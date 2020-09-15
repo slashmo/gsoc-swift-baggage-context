@@ -19,7 +19,7 @@ import Logging
 
 extension Logger {
     /// Returns a logger that in addition to any explicit metadata passed to log statements,
-    /// also includes the `BaggageContext` adapted into metadata values.
+    /// also includes the `Baggage` adapted into metadata values.
     ///
     /// The rendering of baggage values into metadata values is performed on demand,
     /// whenever a log statement is effective (i.e. will be logged, according to active `logLevel`).
@@ -32,12 +32,12 @@ extension Logger {
 }
 
 // ==== ----------------------------------------------------------------------------------------------------------------
-// MARK: BaggageContext (as additional Logger.Metadata) LogHandler
+// MARK: Baggage (as additional Logger.Metadata) LogHandler
 
-/// Proxying log handler which adds `BaggageContext` as metadata when log events are to be emitted.
+/// Proxying log handler which adds `Baggage` as metadata when log events are to be emitted.
 ///
-/// The values stored in the `BaggageContext` are merged with the existing metadata on the logger. If both contain values for the same key,
-/// the `BaggageContext` values are preferred.
+/// The values stored in the `Baggage` are merged with the existing metadata on the logger. If both contain values for the same key,
+/// the `Baggage` values are preferred.
 public struct BaggageMetadataLogHandler: LogHandler {
     private var underlying: Logger
     private let baggage: Baggage
@@ -91,7 +91,7 @@ public struct BaggageMetadataLogHandler: LogHandler {
     ///
     /// This is because a context lookup either has to use the specific type key, or iterate over all keys to locate one by name,
     /// which may be incorrect still, thus rather than making an potentially slightly incorrect lookup, we do not implement peeking
-    /// into a baggage with String keys through this handler (as that is not a capability `BaggageContext` offers in any case.
+    /// into a baggage with String keys through this handler (as that is not a capability `Baggage` offers in any case.
     public subscript(metadataKey metadataKey: Logger.Metadata.Key) -> Logger.Metadata.Value? {
         get {
             return self.underlying[metadataKey: metadataKey]

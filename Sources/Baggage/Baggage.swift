@@ -16,14 +16,14 @@
 
 /// A `Baggage` is a heterogeneous storage type with value semantics for keyed values in a type-safe fashion.
 ///
-/// Its values are uniquely identified via `BaggageKey`s (by type identity). These keys also dictate the type of
+/// Its values are uniquely identified via `Baggage.Key`s (by type identity). These keys also dictate the type of
 /// value allowed for a specific key-value pair through their associated type `Value`.
 ///
 /// ## Defining keys and accessing values
 /// Baggage keys are defined as types, most commonly case-less enums (as no actual instances are actually required)
 /// which conform to the `Baggage.Key` protocol:
 ///
-///     private enum TestIDKey: BaggageKey {
+///     private enum TestIDKey: Baggage.Key {
 ///       typealias Value = String
 ///     }
 ///
@@ -31,7 +31,7 @@
 /// to allow convenient and discoverable ways to interact with the baggage item, the extension should take the form of:
 ///
 ///     extension Baggage {
-///       var testID: TestIDKey.Value? {
+///       var testID: String? {
 ///         get {
 ///           self[TestIDKey.self]
 ///         } set {
@@ -53,11 +53,11 @@
 ///     // retrieve a stored value
 ///     let testID = context.testID ?? "default"
 ///     // remove a stored value
-///     context[TestIDKey.self] = nil
+///     context.testIDKey = nil
 ///
 /// Note that normally a baggage should not be "created" ad-hoc by user code, but rather it should be passed to it from
 /// a runtime. For example, when working in an HTTP server framework, it is most likely that the baggage is already passed
-/// directly or indirectly (e.g. in a `BaggageContext` or `FrameworkContext`)
+/// directly or indirectly (e.g. in a `FrameworkContext`)
 ///
 /// ### Accessing all values
 ///
@@ -121,9 +121,7 @@ extension Baggage {
     ///
     /// ## Example
     ///
-    ///     frameworkHandler { what in
-    ///         hello(who: "World", baggage: .TODO("The framework XYZ should be modified to pass us a context here, and we'd pass it along"))
-    ///     }
+    ///     let baggage = Baggage.TODO("The framework XYZ should be modified to pass us a context here, and we'd pass it along"))
     ///
     /// - Parameters:
     ///   - reason: Informational reason for developers, why a placeholder context was used instead of a proper one,
@@ -152,8 +150,12 @@ extension Baggage {
     /// Rather than using this subscript directly, users SHOULD offer a convenience accessor to their values,
     /// using the following pattern:
     ///
+    ///     internal enum TestID: Baggage.Key {
+    ///         typealias Value = TestID
+    ///     }
+    ///
     ///     extension Baggage {
-    ///       var testID: TestIDKey.Value? {
+    ///       var testID: TestID? {
     ///         get {
     ///           self[TestIDKey.self]
     ///         }
