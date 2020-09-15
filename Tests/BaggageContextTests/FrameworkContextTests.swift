@@ -32,7 +32,7 @@ final class FrameworkBaggageContextTests: XCTestCase {
         context.baggage.testKey = 42
         context.baggage.otherKey = "test"
 
-        context.baggage.forEachBaggageItem { key, value in
+        context.baggage.forEach { key, value in
             contents[key] = value
         }
 

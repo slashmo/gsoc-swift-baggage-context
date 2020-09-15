@@ -61,7 +61,7 @@
 ///
 /// ### Accessing all values
 ///
-/// The only way to access "all" values in a baggage context is by using the `forEachBaggageItem` function.
+/// The only way to access "all" values in a baggage context is by using the `forEach` function.
 /// The baggage container on purpose does not expose more functions to prevent abuse and treating it as too much of an
 /// arbitrary value smuggling container, but only make it convenient for tracing and instrumentation systems which need
 /// to access either specific or all items carried inside a baggage.
@@ -183,7 +183,7 @@ extension Baggage {
     /// Order of those invocations is NOT guaranteed and should not be relied on.
     ///
     /// - Parameter body: A closure invoked with the type erased key and value stored for the key in this baggage.
-    public func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
+    public func forEach(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
         try self._storage.forEach { key, value in
             try body(key, value)
         }

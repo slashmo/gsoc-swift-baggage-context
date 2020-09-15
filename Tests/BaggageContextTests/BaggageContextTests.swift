@@ -26,7 +26,7 @@ final class BaggageContextTests: XCTestCase {
 
         func frameworkFunctionDumpsBaggage(param: String, context: Context) -> String {
             var s = ""
-            context.baggage.forEachBaggageItem { key, item in
+            context.baggage.forEach { key, item in
                 s += "\(key.name): \(item)\n"
             }
             return s
@@ -116,7 +116,7 @@ struct ExampleMutableFrameworkContext: Context {
     }
 
     func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
-        return try self.baggage.forEachBaggageItem(body)
+        return try self.baggage.forEach(body)
     }
 }
 
@@ -139,7 +139,7 @@ struct CoolFrameworkContext: BaggageContext.Context {
     }
 
     func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
-        return try self.baggage.forEachBaggageItem(body)
+        return try self.baggage.forEach(body)
     }
 }
 

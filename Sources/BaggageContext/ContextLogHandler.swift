@@ -103,7 +103,7 @@ public struct BaggageMetadataLogHandler: LogHandler {
 
     private func baggageAsMetadata() -> Logger.Metadata {
         var effectiveMetadata: Logger.Metadata = [:]
-        self.baggage.forEachBaggageItem { key, value in
+        self.baggage.forEach { key, value in
             if let convertible = value as? String {
                 effectiveMetadata[key.name] = .string(convertible)
             } else if let convertible = value as? CustomStringConvertible {
