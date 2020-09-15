@@ -24,7 +24,7 @@ final class BaggageContextTests: XCTestCase {
         baggage.testID = 42
         let context = ExampleFrameworkContext(context: baggage, logger: logger)
 
-        func frameworkFunctionDumpsBaggage(param: String, context: ContextProtocol) -> String {
+        func frameworkFunctionDumpsBaggage(param: String, context: Context) -> String {
             var s = ""
             context.baggage.forEachBaggageItem { key, item in
                 s += "\(key.name): \(item)\n"
@@ -46,10 +46,10 @@ final class BaggageContextTests: XCTestCase {
         let baggage = Baggage.background
         let logger = Logger(label: "TheLogger")
 
-        var context: ContextProtocol & BaggageProtocol = ExampleMutableFrameworkContext(context: baggage, logger: logger)
+        var context: Context & BaggageProtocol = ExampleMutableFrameworkContext(context: baggage, logger: logger)
         context.testID = 42
 
-        func frameworkFunctionDumpsBaggage(param: String, context: ContextProtocol & BaggageProtocol) -> String {
+        func frameworkFunctionDumpsBaggage(param: String, context: Context & BaggageProtocol) -> String {
             var s = ""
             context.forEachBaggageItem { key, item in
                 s += "\(key.name): \(item)\n"
@@ -108,7 +108,7 @@ final class BaggageContextTests: XCTestCase {
     }
 }
 
-struct ExampleFrameworkContext: BaggageContext.ContextProtocol {
+struct ExampleFrameworkContext: BaggageContext.Context {
     let baggage: Baggage
     let logger: Logger
 
@@ -117,12 +117,12 @@ struct ExampleFrameworkContext: BaggageContext.ContextProtocol {
         self.logger = logger.with(self.baggage)
     }
 
-    var asBaggageContext: Context {
+    var asBaggageContext: DefaultContext {
         return .init(baggage: self.baggage, logger: self.logger)
     }
 }
 
-struct ExampleMutableFrameworkContext: ContextProtocol, BaggageProtocol {
+struct ExampleMutableFrameworkContext: Context, BaggageProtocol {
     var baggage: Baggage
 
     private var _logger: Logger
@@ -148,12 +148,12 @@ struct ExampleMutableFrameworkContext: ContextProtocol, BaggageProtocol {
         return try self.baggage.forEachBaggageItem(body)
     }
 
-    var asBaggageContext: Context {
+    var asBaggageContext: DefaultContext {
         return .init(baggage: self.baggage, logger: self._logger)
     }
 }
 
-struct CoolFrameworkContext: BaggageContext.ContextProtocol {
+struct CoolFrameworkContext: BaggageContext.Context {
     private var _logger: Logger = Logger(label: "some frameworks logger")
     var logger: Logger {
         return self._logger.with(self.baggage)
@@ -175,7 +175,7 @@ struct CoolFrameworkContext: BaggageContext.ContextProtocol {
         return try self.baggage.forEachBaggageItem(body)
     }
 
-    var asBaggageContext: Context {
+    var asBaggageContext: DefaultContext {
         return .init(baggage: self.baggage, logger: self._logger)
     }
 }

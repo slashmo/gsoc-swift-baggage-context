@@ -14,56 +14,6 @@
 import Baggage
 import Logging
 
-/// A default `Context` type.
-///
-/// It is a carrier of contextual `Baggage` and related `Logger`, allowing to log and trace throughout a system.
-///
-/// Any values set on the `baggage` will be made accessible to the logger as call-site metadata, allowing it to log those.
-///
-/// ### Logged Metadata and Baggage Items
-///
-/// Please refer to your configured log handler documentation about how to configure which metadata values should be logged
-/// and which not, as each log handler may handle and configure those differently. The default implementations log *all*
-/// metadata/baggage values present, which often is the right thing, however in larger systems one may want to choose a
-/// log handler which allows for configuring these details.
-///
-/// ### Accepting context types in APIs
-///
-/// It is preferred to accept values of `ContextProtocol` in library APIs, as this yields a more flexible API shape,
-/// to which other libraries/frameworks may pass their specific context objects.
-///
-/// - SeeAlso: `Baggage` from the Baggage module.
-/// - SeeAlso: `Logger` from the SwiftLog package.
-public struct Context: ContextProtocol {
-    /// The `Baggage` carried with this context.
-    /// It's values will automatically be made available to the `logger` as metadata when logging.
-    ///
-    /// Baggage values are different from plain logging metadata in that they are intended to be
-    /// carried across process and node boundaries (serialized and deserialized) and are made
-    /// available to instruments using `swift-distributed-tracing`.
-    public var baggage: Baggage
-
-    public var logger: Logger {
-        get {
-            return self._logger.with(self.baggage)
-        }
-        set {
-            self._logger = newValue
-        }
-    }
-
-    private var _logger: Logger
-
-    public init(baggage: Baggage, logger underlying: Logger) {
-        self.baggage = baggage
-        self._logger = underlying
-    }
-
-    public var asBaggageContext: Context {
-        return self
-    }
-}
-
 // ==== ----------------------------------------------------------------------------------------------------------------
 // MARK: Context Protocol
 
@@ -88,7 +38,7 @@ public struct Context: ContextProtocol {
 ///
 /// Please note that if a context does conform to `BaggageProtocol` as well, it will most-likely also offer all properties that
 /// users have provided via extensions on it - so be watchful of potential naming conflicts on variable names.
-public protocol ContextProtocol {
+public protocol Context {
     /// Get the `Baggage` container.
     var baggage: Baggage { get }
 
@@ -118,7 +68,58 @@ public protocol ContextProtocol {
     var logger: Logger { get }
 
     /// Get a baggage `Context` struct, regardless of the representation that this context protocol is implemented by.
-    var asBaggageContext: Context { get }
+    var asBaggageContext: DefaultContext { get }
+}
+
+
+/// A default `Context` type.
+///
+/// It is a carrier of contextual `Baggage` and related `Logger`, allowing to log and trace throughout a system.
+///
+/// Any values set on the `baggage` will be made accessible to the logger as call-site metadata, allowing it to log those.
+///
+/// ### Logged Metadata and Baggage Items
+///
+/// Please refer to your configured log handler documentation about how to configure which metadata values should be logged
+/// and which not, as each log handler may handle and configure those differently. The default implementations log *all*
+/// metadata/baggage values present, which often is the right thing, however in larger systems one may want to choose a
+/// log handler which allows for configuring these details.
+///
+/// ### Accepting context types in APIs
+///
+/// It is preferred to accept values of `ContextProtocol` in library APIs, as this yields a more flexible API shape,
+/// to which other libraries/frameworks may pass their specific context objects.
+///
+/// - SeeAlso: `Baggage` from the Baggage module.
+/// - SeeAlso: `Logger` from the SwiftLog package.
+public struct DefaultContext: Context {
+    /// The `Baggage` carried with this context.
+    /// It's values will automatically be made available to the `logger` as metadata when logging.
+    ///
+    /// Baggage values are different from plain logging metadata in that they are intended to be
+    /// carried across process and node boundaries (serialized and deserialized) and are made
+    /// available to instruments using `swift-distributed-tracing`.
+    public var baggage: Baggage
+
+    public var logger: Logger {
+        get {
+            return self._logger.with(self.baggage)
+        }
+        set {
+            self._logger = newValue
+        }
+    }
+
+    private var _logger: Logger
+
+    public init(baggage: Baggage, logger underlying: Logger) {
+        self.baggage = baggage
+        self._logger = underlying
+    }
+
+    public var asBaggageContext: DefaultContext {
+        return self
+    }
 }
 
 // ==== ----------------------------------------------------------------------------------------------------------------
@@ -129,7 +130,7 @@ extension Context {
     ///
     /// - Parameter logger: Logger that should replace the underlying logger of this context.
     /// - Returns: new context, with the passed in `logger`
-    public func withLogger(_ logger: Logger) -> Context {
+    public func withLogger(_ logger: Logger) -> DefaultContext {
         var copy = self
         copy.logger = logger
         return copy
@@ -139,7 +140,7 @@ extension Context {
     ///
     /// - Parameter logLevel: New log level which should be used to create the new context
     /// - Returns: new context, with the passed in `logLevel` used for the underlying logger
-    public func withLogLevel(_ logLevel: Logger.Level) -> Context {
+    public func withLogLevel(_ logLevel: Logger.Level) -> DefaultContext {
         var copy = self
         copy.logger.logLevel = logLevel
         return copy
@@ -153,7 +154,7 @@ extension Context {
     ///     })
     ///
     /// - Parameter function:
-    public func withBaggage(_ function: (inout Baggage) -> Void) -> Context {
+    public func withBaggage(_ function: (inout Baggage) -> Void) -> DefaultContext {
         var baggage = self.baggage
         function(&baggage)
         return self.withBaggage(baggage)
@@ -165,7 +166,7 @@ extension Context {
     ///
     /// - Parameter baggage: baggage that should *replace* the context's current baggage.
     /// - Returns: new context, with the passed in baggage
-    public func withBaggage(_ baggage: Baggage) -> Context {
+    public func withBaggage(_ baggage: Baggage) -> DefaultContext {
         var copy = self
         copy.baggage = baggage
         return copy
@@ -175,7 +176,7 @@ extension Context {
 // ==== ----------------------------------------------------------------------------------------------------------------
 // MARK: Context Initializers
 
-extension Context {
+extension DefaultContext {
     /// An empty baggage context intended as the "root" or "initial" baggage context background processing tasks, or as the "root" baggage context.
     ///
     /// It is never canceled, has no values, and has no deadline.
@@ -198,7 +199,7 @@ extension Context {
     /// such that other developers are informed that the lack of context was not done on purpose, but rather because either
     /// not being sure where to obtain a context from, or other framework limitations -- e.g. the outer framework not being
     /// context aware just yet.
-    public static func background(logger: Logger) -> Context {
+    public static func background(logger: Logger) -> DefaultContext {
         return .init(baggage: .background, logger: logger)
     }
 
@@ -219,12 +220,12 @@ extension Context {
     /// - Parameters:
     ///   - reason: Informational reason for developers, why a placeholder context was used instead of a proper one,
     /// - Returns: Empty "to-do" baggage context which should be eventually replaced with a carried through one, or `background`.
-    public static func background(label loggerLabel: String) -> Context {
+    public static func background(label loggerLabel: String) -> DefaultContext {
         return .background(logger: Logger(label: loggerLabel))
     }
 }
 
-extension Context {
+extension DefaultContext {
     /// A baggage context intended as a placeholder until a real value can be passed through a function call.
     ///
     /// It should ONLY be used while prototyping or when the passing of the proper context is not yet possible,
@@ -248,7 +249,7 @@ extension Context {
     /// - Parameters:
     ///   - reason: Informational reason for developers, why a placeholder context was used instead of a proper one,
     /// - Returns: Empty "to-do" baggage context which should be eventually replaced with a carried through one, or `background`.
-    public static func TODO(logger: Logger, _ reason: StaticString? = "", function: String = #function, file: String = #file, line: UInt = #line) -> Context {
+    public static func TODO(logger: Logger, _ reason: StaticString? = "", function: String = #function, file: String = #file, line: UInt = #line) -> DefaultContext {
         let baggage = Baggage.TODO(reason, function: function, file: file, line: line)
         #if BAGGAGE_CRASH_TODOS
         fatalError("BAGGAGE_CRASH_TODOS: at \(file):\(line) (function \(function)), reason: \(reason)", file: file, line: line)
@@ -281,7 +282,7 @@ extension Context {
     ///   - label: Label to be used to obtain a globally bootstrapped `Logger` with.
     ///   - reason: Informational reason for developers, why a placeholder context was used instead of a proper one,
     /// - Returns: Empty "to-do" baggage context which should be eventually replaced with a carried through one, or `background`.
-    public static func TODO(label loggerLabel: String, _ reason: StaticString? = "", function: String = #function, file: String = #file, line: UInt = #line) -> Context {
+    public static func TODO(label loggerLabel: String, _ reason: StaticString? = "", function: String = #function, file: String = #file, line: UInt = #line) -> DefaultContext {
         return .TODO(logger: Logger(label: loggerLabel), reason, function: function, file: file, line: line)
     }
 }
