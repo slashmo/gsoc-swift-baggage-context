@@ -18,7 +18,7 @@ import XCTest
 
 final class BaggageContextTests: XCTestCase {
     func test_ExampleFrameworkContext_dumpBaggage() throws {
-        var baggage = Baggage.background
+        var baggage = Baggage.topLevel
         let logger = Logger(label: "TheLogger")
 
         baggage.testID = 42
@@ -43,7 +43,7 @@ final class BaggageContextTests: XCTestCase {
     }
 
     func test_ExampleMutableFrameworkContext_log_withBaggage() throws {
-        let baggage = Baggage.background
+        let baggage = Baggage.topLevel
         let logging = TestLogging()
         let logger = Logger(label: "TheLogger", factory: { label in logging.make(label: label) })
 
@@ -66,7 +66,7 @@ final class BaggageContextTests: XCTestCase {
     }
 
     func test_ExampleMutableFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata() {
-        let baggage = Baggage.background
+        let baggage = Baggage.topLevel
         let logging = TestLogging()
         var logger = Logger(label: "TheLogger", factory: { label in logging.make(label: label) })
         logger[metadataKey: "secondIDExplicitlyNamed"] = "set on logger"
@@ -126,7 +126,7 @@ struct CoolFrameworkContext: BaggageContext.Context {
         return self._logger.with(self.baggage)
     }
 
-    var baggage: Baggage = .background
+    var baggage: Baggage = .topLevel
 
     // framework context defines other values as well
     let frameworkField: String = ""

@@ -47,7 +47,7 @@
 /// ## Usage
 /// Using a baggage container is fairly straight forward, as it boils down to using the prepared computed properties:
 ///
-///     var context = Baggage.background
+///     var context = Baggage.topLevel
 ///     // set a new value
 ///     context.testID = "abc"
 ///     // retrieve a stored value
@@ -70,17 +70,16 @@ public struct Baggage {
 
     private var _storage = [AnyBaggageKey: Any]()
 
-    /// Internal on purpose, please use `Baggage.TODO` or `Baggage.background` to create an "empty" context,
+    /// Internal on purpose, please use `Baggage.TODO` or `Baggage.topLevel` to create an "empty" context,
     /// which carries more meaning to other developers why an empty context was used.
     init() {}
 }
 
 extension Baggage {
-    /// Creates a new empty baggage, generally used for background processing tasks or an "initial" baggage to be immediately
-    /// populated with some values by a framework or runtime.
-    ///
-    /// Typically, this would only be called in a "top" or "background" setting, such as the main function, initialization,
-    /// tests, beginning of some background task or some other top-level baggage to be immediately populated with incoming request/message information.
+    /// Creates a new empty "top level" baggage, generally used as an "initial" baggage to immediately be populated with
+    /// some values by a framework or runtime. Another use case is for tasks starting in the "background" (e.g. on a timer),
+    /// which don't have a "request context" per se that they can pick up, and as such they have to create a "top level"
+    /// baggage for their work.
     ///
     /// ## Usage in frameworks and libraries
     /// This function is really only intended to be used frameworks and libraries, at the "top-level" where a request's,
@@ -99,7 +98,7 @@ extension Baggage {
     /// in order to inform other developers that the lack of context passing was not done on purpose, but rather because either
     /// not being sure where to obtain a context from, or other framework limitations -- e.g. the outer framework not being
     /// baggage context aware just yet.
-    public static var background: Baggage {
+    public static var topLevel: Baggage {
         return Baggage()
     }
 }
@@ -127,7 +126,7 @@ extension Baggage {
     ///   - reason: Informational reason for developers, why a placeholder context was used instead of a proper one,
     /// - Returns: Empty "to-do" baggage context which should be eventually replaced with a carried through one, or `background`.
     public static func TODO(_ reason: StaticString? = "", function: String = #function, file: String = #file, line: UInt = #line) -> Baggage {
-        var context = Baggage.background
+        var context = Baggage.topLevel
         #if BAGGAGE_CRASH_TODOS
         fatalError("BAGGAGE_CRASH_TODOS: at \(file):\(line) (function \(function)), reason: \(reason)")
         #else

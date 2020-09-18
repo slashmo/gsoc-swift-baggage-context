@@ -18,7 +18,7 @@ final class BaggageTests: XCTestCase {
     func testSubscriptAccess() {
         let testID = 42
 
-        var baggage = Baggage.background
+        var baggage = Baggage.topLevel
         XCTAssertNil(baggage[TestIDKey.self])
 
         baggage[TestIDKey.self] = testID
@@ -31,7 +31,7 @@ final class BaggageTests: XCTestCase {
     func testRecommendedConvenienceExtension() {
         let testID = 42
 
-        var baggage = Baggage.background
+        var baggage = Baggage.topLevel
         XCTAssertNil(baggage.testID)
 
         baggage.testID = testID
@@ -42,18 +42,18 @@ final class BaggageTests: XCTestCase {
     }
 
     func testEmptyBaggageDescription() {
-        XCTAssertEqual(String(describing: Baggage.background), "Baggage(keys: [])")
+        XCTAssertEqual(String(describing: Baggage.topLevel), "Baggage(keys: [])")
     }
 
     func testSingleKeyBaggageDescription() {
-        var baggage = Baggage.background
+        var baggage = Baggage.topLevel
         baggage.testID = 42
 
         XCTAssertEqual(String(describing: baggage), #"Baggage(keys: ["TestIDKey"])"#)
     }
 
     func testMultiKeysBaggageDescription() {
-        var baggage = Baggage.background
+        var baggage = Baggage.topLevel
         baggage.testID = 42
         baggage[SecondTestIDKey.self] = "test"
 
@@ -80,7 +80,7 @@ final class BaggageTests: XCTestCase {
     }
 
     func test_todo_empty() {
-        let context = Baggage.background
+        let context = Baggage.topLevel
         _ = context // avoid "not used" warning
 
         // TODO: Can't work with protocols; re-consider the entire carrier approach... Context being a Baggage + Logger, and a specific type.
@@ -88,7 +88,7 @@ final class BaggageTests: XCTestCase {
 //        func take(context: BaggageContextProtocol) {
 //            _ = context // ignore
 //        }
-//        take(context: .background)
+//        take(context: .topLevel)
     }
 }
 

@@ -100,20 +100,20 @@ public struct DefaultContext: Context {
         didSet {
             // Since someone could have completely replaced the logger (not just changed the log level),
             // we have to update the baggage again, since perhaps the new logger has empty metadata.
-            self.logger.update(previous: .background, latest: self.baggage)
+            self.logger.update(previous: .topLevel, latest: self.baggage)
         }
     }
 
     public init(baggage: Baggage, logger: Logger) {
         self.baggage = baggage
         self.logger = logger
-        self.logger.update(previous: .background, latest: baggage)
+        self.logger.update(previous: .topLevel, latest: baggage)
     }
 
     public init<C>(context: C) where C: Context {
         self.baggage = context.baggage
         self.logger = context.logger
-        self.logger.update(previous: .background, latest: self.baggage)
+        self.logger.update(previous: .topLevel, latest: self.baggage)
     }
 }
 
@@ -172,9 +172,11 @@ extension DefaultContext {
 // MARK: Context Initializers
 
 extension DefaultContext {
-    /// An empty baggage context intended as the "root" or "initial" baggage context background processing tasks, or as the "root" baggage context.
+    /// Creates a new empty "top level" default baggage context, generally used as an "initial" context to immediately be populated with
+    /// some values by a framework or runtime. Another use case is for tasks starting in the "background" (e.g. on a timer),
+    /// which don't have a "request context" per se that they can pick up, and as such they have to create a "top level"
+    /// baggage for their work.
     ///
-    /// It is never canceled, has no values, and has no deadline.
     /// It is typically used by the main function, initialization, and tests, and as the top-level Context for incoming requests.
     ///
     /// ### Usage in frameworks and libraries
@@ -194,8 +196,8 @@ extension DefaultContext {
     /// such that other developers are informed that the lack of context was not done on purpose, but rather because either
     /// not being sure where to obtain a context from, or other framework limitations -- e.g. the outer framework not being
     /// context aware just yet.
-    public static func background(logger: Logger) -> DefaultContext {
-        return .init(baggage: .background, logger: logger)
+    public static func topLevel(logger: Logger) -> DefaultContext {
+        return .init(baggage: .topLevel, logger: logger)
     }
 }
 

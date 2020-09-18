@@ -44,7 +44,7 @@ final class FrameworkBaggageContextTests: XCTestCase {
 }
 
 private struct TestFrameworkContext: Context {
-    var baggage = Baggage.background
+    var baggage = Baggage.topLevel
 
     private var _logger = Logger(label: "test")
     var logger: Logger {
