@@ -32,7 +32,6 @@ import Logging
 /// It is STRONGLY encouraged to use the `DefaultContext` as inspiration for a correct implementation of a `Context`,
 /// as the relationship between `Logger` and `Baggage` can be tricky to wrap your head around at first.
 public protocol Context {
-
     /// Get the `Baggage` container.
     ///
     /// ### Implementation notes

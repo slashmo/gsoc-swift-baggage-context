@@ -33,9 +33,9 @@
 ///     extension Baggage {
 ///       var testID: String? {
 ///         get {
-///           self[TestIDKey.self]
+///           self[_key: TestIDKey.self]
 ///         } set {
-///           self[TestIDKey.self] = newValue
+///           self[_key: TestIDKey.self] = newValue
 ///         }
 ///       }
 ///     }
@@ -130,7 +130,7 @@ extension Baggage {
         #if BAGGAGE_CRASH_TODOS
         fatalError("BAGGAGE_CRASH_TODOS: at \(file):\(line) (function \(function)), reason: \(reason)")
         #else
-        context[TODOKey.self] = .init(file: file, line: line)
+        context[_key: TODOKey.self] = .init(file: file, line: line)
         return context
         #endif
     }
@@ -145,9 +145,9 @@ extension Baggage {
 
 extension Baggage {
     /// Provides type-safe access to the baggage's values.
+    /// This API should ONLY be used inside of accessor implementations.
     ///
-    /// Rather than using this subscript directly, users SHOULD offer a convenience accessor to their values,
-    /// using the following pattern:
+    /// End users rather than using this subscript should use "accessors" the key's author MUST define, following this pattern:
     ///
     ///     internal enum TestID: Baggage.Key {
     ///         typealias Value = TestID
@@ -156,17 +156,20 @@ extension Baggage {
     ///     extension Baggage {
     ///       var testID: TestID? {
     ///         get {
-    ///           self[TestIDKey.self]
+    ///           self[_key: TestIDKey.self]
     ///         }
     ///         set {
-    ///           self[TestIDKey.self] = newValue
+    ///           self[_key: TestIDKey.self] = newValue
     ///         }
     ///       }
     ///     }
     ///
+    /// This is in order to enforce a consistent style across projects and also allow for fine grained control over
+    /// who may set and who may get such property. Just access control to the Key type itself lacks such fidelity.
+    ///
     /// Note that specific baggage and context types MAY (and usually do), offer also a way to set baggage values,
     /// however in the most general case it is not required, as some frameworks may only be able to offer reading.
-    public subscript<Key: BaggageKey>(_ key: Key.Type) -> Key.Value? {
+    public subscript<Key: BaggageKey>(_key key: Key.Type) -> Key.Value? {
         get {
             guard let value = self._storage[AnyBaggageKey(key)] else { return nil }
             // safe to force-cast as this subscript is the only way to set a value.

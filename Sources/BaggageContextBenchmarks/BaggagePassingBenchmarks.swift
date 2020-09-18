@@ -159,32 +159,32 @@ private enum TestKD1: BaggageKey {
 
 extension Baggage {
     fileprivate var passCounter: TestPassCounterKey.Value {
-        get { return self[TestPassCounterKey.self] ?? 0 }
-        set { self[TestPassCounterKey.self] = newValue }
+        get { return self[_key: TestPassCounterKey.self] ?? 0 }
+        set { self[_key: TestPassCounterKey.self] = newValue }
     }
 
     fileprivate var k1: TestK1.Value? {
-        get { return self[TestK1.self] }
-        set { self[TestK1.self] = newValue }
+        get { return self[_key: TestK1.self] }
+        set { self[_key: TestK1.self] = newValue }
     }
 
     fileprivate var k2: TestK2.Value? {
-        get { return self[TestK2.self] }
-        set { self[TestK2.self] = newValue }
+        get { return self[_key: TestK2.self] }
+        set { self[_key: TestK2.self] = newValue }
     }
 
     fileprivate var k3: TestK3.Value? {
-        get { return self[TestK3.self] }
-        set { self[TestK3.self] = newValue }
+        get { return self[_key: TestK3.self] }
+        set { self[_key: TestK3.self] = newValue }
     }
 
     fileprivate var k4: TestK4.Value? {
-        get { return self[TestK4.self] }
-        set { self[TestK4.self] = newValue }
+        get { return self[_key: TestK4.self] }
+        set { self[_key: TestK4.self] = newValue }
     }
 
     fileprivate var kd1: TestKD1.Value? {
-        get { return self[TestKD1.self] }
-        set { self[TestKD1.self] = newValue }
+        get { return self[_key: TestKD1.self] }
+        set { self[_key: TestKD1.self] = newValue }
     }
 }

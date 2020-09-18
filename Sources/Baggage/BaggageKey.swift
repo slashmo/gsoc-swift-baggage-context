@@ -27,10 +27,10 @@
 ///         /// This is some useful property documentation.
 ///         var testID: String? {
 ///             get {
-///                 self[TestIDKey.self]
+///                 self[_key: TestIDKey.self]
 ///             }
 ///             set {
-///                 self[TestIDKey.self] = newValue
+///                 self[_key: TestIDKey.self] = newValue
 ///             }
 ///         }
 ///     }

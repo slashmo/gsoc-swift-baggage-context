@@ -73,6 +73,7 @@ final class BaggageContextTests: XCTestCase {
             "metadata": "on-logger",
         ])
     }
+
     func test_DefaultContext_log_withBaggage() throws {
         let logging = TestLogging()
         let logger = Logger(label: "TheLogger", factory: { label in logging.make(label: label) })
@@ -120,7 +121,6 @@ final class BaggageContextTests: XCTestCase {
             "secondIDExplicitlyNamed": "set on baggage",
         ])
     }
-
 }
 
 struct ExampleFrameworkContext: BaggageContext.Context {
@@ -154,6 +154,7 @@ struct CoolFrameworkContext: BaggageContext.Context {
             self.logger.updateMetadata(previous: self.baggage, latest: newValue)
         }
     }
+
     var logger: Logger {
         didSet {
             self.logger.updateMetadata(previous: self.baggage, latest: self.baggage)
@@ -184,19 +185,19 @@ struct FakeEventLoop {}
 private extension Baggage {
     var testID: Int? {
         get {
-            return self[TestIDKey.self]
+            return self[_key: TestIDKey.self]
         }
         set {
-            self[TestIDKey.self] = newValue
+            self[_key: TestIDKey.self] = newValue
         }
     }
 
     var secondTestID: String? {
         get {
-            return self[SecondTestIDKey.self]
+            return self[_key: SecondTestIDKey.self]
         }
         set {
-            self[SecondTestIDKey.self] = newValue
+            self[_key: SecondTestIDKey.self] = newValue
         }
     }
 }

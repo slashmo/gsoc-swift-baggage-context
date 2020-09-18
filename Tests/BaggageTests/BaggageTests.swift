@@ -19,13 +19,13 @@ final class BaggageTests: XCTestCase {
         let testID = 42
 
         var baggage = Baggage.topLevel
-        XCTAssertNil(baggage[TestIDKey.self])
+        XCTAssertNil(baggage[_key: TestIDKey.self])
 
-        baggage[TestIDKey.self] = testID
-        XCTAssertEqual(baggage[TestIDKey.self], testID)
+        baggage[_key: TestIDKey.self] = testID
+        XCTAssertEqual(baggage[_key: TestIDKey.self], testID)
 
-        baggage[TestIDKey.self] = nil
-        XCTAssertNil(baggage[TestIDKey.self])
+        baggage[_key: TestIDKey.self] = nil
+        XCTAssertNil(baggage[_key: TestIDKey.self])
     }
 
     func testRecommendedConvenienceExtension() {
@@ -37,7 +37,7 @@ final class BaggageTests: XCTestCase {
         baggage.testID = testID
         XCTAssertEqual(baggage.testID, testID)
 
-        baggage[TestIDKey.self] = nil
+        baggage[_key: TestIDKey.self] = nil
         XCTAssertNil(baggage.testID)
     }
 
@@ -55,7 +55,7 @@ final class BaggageTests: XCTestCase {
     func testMultiKeysBaggageDescription() {
         var baggage = Baggage.topLevel
         baggage.testID = 42
-        baggage[SecondTestIDKey.self] = "test"
+        baggage[_key: SecondTestIDKey.self] = "test"
 
         let description = String(describing: baggage)
         XCTAssert(description.starts(with: "Baggage(keys: ["), "Was: \(description)")
@@ -99,10 +99,10 @@ private enum TestIDKey: Baggage.Key {
 private extension Baggage {
     var testID: Int? {
         get {
-            return self[TestIDKey.self]
+            return self[_key: TestIDKey.self]
         }
         set {
-            self[TestIDKey.self] = newValue
+            self[_key: TestIDKey.self] = newValue
         }
     }
 }

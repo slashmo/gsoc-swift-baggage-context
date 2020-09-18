@@ -27,6 +27,7 @@ extension BaggageContextTests {
       return [
                 ("test_ExampleFrameworkContext_dumpBaggage", test_ExampleFrameworkContext_dumpBaggage),
                 ("test_ExampleFrameworkContext_log_withBaggage", test_ExampleFrameworkContext_log_withBaggage),
+                ("test_DefaultContext_log_withBaggage", test_DefaultContext_log_withBaggage),
                 ("test_ExampleFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata", test_ExampleFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata),
            ]
    }

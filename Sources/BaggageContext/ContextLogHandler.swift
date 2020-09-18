@@ -149,7 +149,6 @@ public struct BaggageMetadataLogHandler: LogHandler {
 
         return effectiveMetadata
     }
-
 }
 
 struct BaggageValueCustomStringConvertible: CustomStringConvertible {
