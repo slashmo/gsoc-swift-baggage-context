@@ -21,7 +21,7 @@ import Logging
 private let message: Logger.Message = "Hello world how are you"
 
 func pad(_ label: String) -> String {
-    "\(label)\(String(repeating: " ", count: max(0, 80 - label.count)))"
+    return "\(label)\(String(repeating: " ", count: max(0, 80 - label.count)))"
 }
 
 public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
