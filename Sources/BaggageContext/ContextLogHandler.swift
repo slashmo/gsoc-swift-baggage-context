@@ -23,6 +23,11 @@ extension Logger {
     ///
     /// The rendering of baggage values into metadata values is performed on demand,
     /// whenever a log statement is effective (i.e. will be logged, according to active `logLevel`).
+    ///
+    /// Note that when it is known that multiple log statements will be performed with the baggage it is preferable to
+    /// modify the logger's metadata by issuing `logger.updateMetadata(previous: baggage, latest: baggage)` instead.
+    ///
+    /// - SeeAlso:
     public func with(_ baggage: Baggage) -> Logger {
         return Logger(
             label: self.label,
@@ -30,7 +35,15 @@ extension Logger {
         )
     }
 
-    public mutating func update(previous: Baggage, latest: Baggage) {
+    /// Update the logger's metadata in accordance to the passed in baggage.
+    ///
+    /// Items which were previously present in the baggage but are now removed will also be removed from the logger's
+    /// metadata.
+    ///
+    /// - Parameters:
+    ///   - previous: baggage which was previously used to set metadata on this logger (pass `.topLevel` if unknown or none)
+    ///   - latest: the current, latest, state of the baggage container; all of it's loggable values will be set as the `Logger`'s metadata
+    public mutating func updateMetadata(previous: Baggage, latest: Baggage) {
         var removedKeys: Set<AnyBaggageKey> = []
         removedKeys.reserveCapacity(previous.count)
         previous.forEach { key, _ in
@@ -38,7 +51,13 @@ extension Logger {
         }
         latest.forEach { key, value in
             removedKeys.remove(key)
-            self[metadataKey: key.name] = "\(value)"
+            if let convertible = value as? String {
+                self[metadataKey: key.name] = .string(convertible)
+            } else if let convertible = value as? CustomStringConvertible {
+                self[metadataKey: key.name] = .stringConvertible(convertible)
+            } else {
+                self[metadataKey: key.name] = .stringConvertible(BaggageValueCustomStringConvertible(value))
+            }
         }
         removedKeys.forEach { removedKey in
             self[metadataKey: removedKey.name] = nil
@@ -131,15 +150,16 @@ public struct BaggageMetadataLogHandler: LogHandler {
         return effectiveMetadata
     }
 
-    struct BaggageValueCustomStringConvertible: CustomStringConvertible {
-        let value: Any
+}
 
-        init(_ value: Any) {
-            self.value = value
-        }
+struct BaggageValueCustomStringConvertible: CustomStringConvertible {
+    let value: Any
 
-        var description: String {
-            return "\(self.value)"
-        }
+    init(_ value: Any) {
+        self.value = value
+    }
+
+    var description: String {
+        return "\(self.value)"
     }
 }

@@ -22,34 +22,74 @@ import Logging
 ///
 /// This allows frameworks and library authors to offer APIs which compose more easily.
 /// Please refer to the "Reference Implementation" notes on each of the requirements to know how to implement this protocol correctly.
+///
+/// ### Implementation notes
+/// It is STRONGLY encouraged that a context type should exhibit Value Semantics (i.e. be a pure `struct`, or implement
+/// the Copy-on-Write pattern), in order to implement the `set` requirements of the baggage and logger effectively,
+/// and also for their user's sanity, as a reference semantics context type can be very confusing to use when shared
+/// between multiple threads, as often is the case in server side environments.
+///
+/// It is STRONGLY encouraged to use the `DefaultContext` as inspiration for a correct implementation of a `Context`,
+/// as the relationship between `Logger` and `Baggage` can be tricky to wrap your head around at first.
 public protocol Context {
+
     /// Get the `Baggage` container.
-    var baggage: Baggage { get }
+    ///
+    /// ### Implementation notes
+    /// Libraries and/or frameworks which conform to this protocol with their "Framework Context" types MUST
+    /// ensure that a modification of the baggage is properly represented in the associated `logger`. Users expect values
+    /// from the baggage be visible in their log statements issued via `context.logger.info()`.
+    ///
+    /// Please refer to `DefaultContext`'s implementation for a reference implementation,
+    /// here a short snippet of how the baggage itself should be implemented:
+    ///
+    ///     public var baggage: Baggage {
+    ///         willSet {
+    ///             self._logger.updateMetadata(previous: self.baggage, latest: newValue)
+    ///         }
+    ///     }
+    ///
+    /// #### Thread Safety
+    /// Implementations / MUST take care of thread-safety of modifications of the baggage. They can achieve this by such
+    /// context type being a pure `struct` or by implementing Copy-on-Write semantics for their type, the latter gives
+    /// many benefits, allowing the context to avoid being copied unless needed to (e.g. if the context type contains
+    /// many other values, in addition to the baggage).
+    var baggage: Baggage { get set }
 
     /// The `Logger` associated with this context carrier.
     ///
     /// It automatically populates the loggers metadata based on the `Baggage` associated with this context object.
     ///
-    /// ### Implementation note
-    ///
+    /// ### Implementation notes
     /// Libraries and/or frameworks which conform to this protocol with their "Framework Context" types,
     /// SHOULD implement this logger by wrapping the "raw" logger associated with  `_logger.with(self.baggage)` function,
     /// which efficiently handles the bridging of baggage to logging metadata values.
     ///
-    /// ### Reference Implementation
+    /// If a new logger is set, it MUST populate itself with the latest (current) baggage of the context,
+    /// this is to ensure that even if users set a new logger (completely "fresh") here, the metadata from the baggage
+    /// still will properly be logged in other pieces of the application where the context might be passed to.
     ///
-    /// Writes to the `logger` metadata SHOULD NOT be reflected in the `baggage`,
-    /// however writes to the underlying `baggage` SHOULD be reflected in the `logger`.
+    /// A correct implementation might look like the following:
     ///
-    ///     struct MyFrameworkContext: ContextProtocol {
-    ///       var baggage: Baggage
-    ///       private let _logger: Logger
-    ///
-    ///       var logger: Logger {
-    ///         return self._logger.with(self.baggage)
-    ///       }
+    ///     public var _logger: Logger
+    ///         public var logger: Logger {
+    ///             get {
+    ///                 return self._logger
+    ///             }
+    ///             set {
+    ///                 self._logger = newValue
+    ///                 // Since someone could have completely replaced the logger (not just changed the log level),
+    ///                 // we have to update the baggage again, since perhaps the new logger has empty metadata.
+    ///                 self._logger.updateMetadata(previous: .topLevel, latest: self.baggage)
+    ///             }
+    ///         }
     ///     }
-    var logger: Logger { get }
+    ///
+    ///
+    /// #### Thread Safety
+    /// Implementations MUST ensure the thread-safety of mutating the logger. This is usually handled best by the
+    /// framework context itself being a Copy-on-Write type, however the exact safety mechanism is left up to the libraries.
+    var logger: Logger { get set }
 }
 
 /// A default `Context` type.
@@ -92,28 +132,34 @@ public struct DefaultContext: Context {
             // Systems which never or rarely log will take the hit for it here. The alternative tradeoff to map lazily as `logger.with(baggage)`
             // is available as well, but users would have to build their own context and specifically make use of that then -- that approach
             // allows to not pay the mapping cost up front, but only if a log statement is made (but then again, the cost is paid every time we log something).
-            self.logger.update(previous: self.baggage, latest: newValue)
+            self._logger.updateMetadata(previous: self.baggage, latest: newValue)
         }
     }
 
+    // We need to store the logger as `_logger` in order to avoid cyclic updates triggering when baggage changes
+    public var _logger: Logger
     public var logger: Logger {
-        didSet {
+        get {
+            return self._logger
+        }
+        set {
+            self._logger = newValue
             // Since someone could have completely replaced the logger (not just changed the log level),
             // we have to update the baggage again, since perhaps the new logger has empty metadata.
-            self.logger.update(previous: .topLevel, latest: self.baggage)
+            self._logger.updateMetadata(previous: .topLevel, latest: self.baggage)
         }
     }
 
     public init(baggage: Baggage, logger: Logger) {
         self.baggage = baggage
-        self.logger = logger
-        self.logger.update(previous: .topLevel, latest: baggage)
+        self._logger = logger
+        self._logger.updateMetadata(previous: .topLevel, latest: baggage)
     }
 
     public init<C>(context: C) where C: Context {
         self.baggage = context.baggage
-        self.logger = context.logger
-        self.logger.update(previous: .topLevel, latest: self.baggage)
+        self._logger = context.logger
+        self._logger.updateMetadata(previous: .topLevel, latest: self.baggage)
     }
 }
 

@@ -84,11 +84,9 @@ internal struct TestLogHandler: LogHandler {
 
     public var metadata: Logger.Metadata {
         get {
-            // return self.logger.metadata
             return self.metadataLock.withLock { self._metadata }
         }
         set {
-            // self.logger.metadata = newValue
             self.metadataLock.withLock { self._metadata = newValue }
         }
     }
@@ -96,11 +94,9 @@ internal struct TestLogHandler: LogHandler {
     // TODO: would be nice to delegate to local copy of logger but StdoutLogger is a reference type. why?
     subscript(metadataKey metadataKey: Logger.Metadata.Key) -> Logger.Metadata.Value? {
         get {
-            // return self.logger[metadataKey: metadataKey]
             return self.metadataLock.withLock { self._metadata[metadataKey] }
         }
         set {
-            // return logger[metadataKey: metadataKey] = newValue
             self.metadataLock.withLock {
                 self._metadata[metadataKey] = newValue
             }

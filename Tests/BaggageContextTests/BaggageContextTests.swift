@@ -42,12 +42,12 @@ final class BaggageContextTests: XCTestCase {
         )
     }
 
-    func test_ExampleMutableFrameworkContext_log_withBaggage() throws {
+    func test_ExampleFrameworkContext_log_withBaggage() throws {
         let baggage = Baggage.topLevel
         let logging = TestLogging()
         let logger = Logger(label: "TheLogger", factory: { label in logging.make(label: label) })
 
-        var context = ExampleMutableFrameworkContext(context: baggage, logger: logger)
+        var context = ExampleFrameworkContext(context: baggage, logger: logger)
 
         context.baggage.secondTestID = "value"
         context.baggage.testID = 42
@@ -56,6 +56,12 @@ final class BaggageContextTests: XCTestCase {
         context.baggage.testID = nil
         context.logger.warning("World")
 
+        context.baggage.secondTestID = nil
+        context.logger[metadataKey: "metadata"] = "on-logger"
+        context.logger.warning("!")
+
+        // These implicitly exercise logger.updateMetadata
+
         logging.history.assertExist(level: .info, message: "Hello", metadata: [
             "TestIDKey": .stringConvertible(42),
             "secondIDExplicitlyNamed": "value",
@@ -63,15 +69,48 @@ final class BaggageContextTests: XCTestCase {
         logging.history.assertExist(level: .warning, message: "World", metadata: [
             "secondIDExplicitlyNamed": "value",
         ])
+        logging.history.assertExist(level: .warning, message: "!", metadata: [
+            "metadata": "on-logger",
+        ])
+    }
+    func test_DefaultContext_log_withBaggage() throws {
+        let logging = TestLogging()
+        let logger = Logger(label: "TheLogger", factory: { label in logging.make(label: label) })
+
+        var context = DefaultContext.topLevel(logger: logger)
+
+        context.baggage.secondTestID = "value"
+        context.baggage.testID = 42
+        context.logger.info("Hello")
+
+        context.baggage.testID = nil
+        context.logger.warning("World")
+
+        context.baggage.secondTestID = nil
+        context.logger[metadataKey: "metadata"] = "on-logger"
+        context.logger.warning("!")
+
+        // These implicitly exercise logger.updateMetadata
+
+        logging.history.assertExist(level: .info, message: "Hello", metadata: [
+            "TestIDKey": .stringConvertible(42),
+            "secondIDExplicitlyNamed": "value",
+        ])
+        logging.history.assertExist(level: .warning, message: "World", metadata: [
+            "secondIDExplicitlyNamed": "value",
+        ])
+        logging.history.assertExist(level: .warning, message: "!", metadata: [
+            "metadata": "on-logger",
+        ])
     }
 
-    func test_ExampleMutableFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata() {
+    func test_ExampleFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata() {
         let baggage = Baggage.topLevel
         let logging = TestLogging()
         var logger = Logger(label: "TheLogger", factory: { label in logging.make(label: label) })
         logger[metadataKey: "secondIDExplicitlyNamed"] = "set on logger"
 
-        var context = ExampleMutableFrameworkContext(context: baggage, logger: logger)
+        var context = ExampleFrameworkContext(context: baggage, logger: logger)
 
         context.baggage.secondTestID = "set on baggage"
 
@@ -81,61 +120,58 @@ final class BaggageContextTests: XCTestCase {
             "secondIDExplicitlyNamed": "set on baggage",
         ])
     }
+
 }
 
 struct ExampleFrameworkContext: BaggageContext.Context {
-    let baggage: Baggage
-    let logger: Logger
-
-    init(context baggage: Baggage, logger: Logger) {
-        self.baggage = baggage
-        self.logger = logger.with(self.baggage)
+    var baggage: Baggage {
+        willSet {
+            self._logger.updateMetadata(previous: self.baggage, latest: newValue)
+        }
     }
-}
 
-struct ExampleMutableFrameworkContext: Context {
-    var baggage: Baggage
-
-    private var _logger: Logger
+    var _logger: Logger
     var logger: Logger {
-        return self._logger.with(self.baggage)
+        get {
+            return self._logger
+        }
+        set {
+            self._logger = newValue
+            self._logger.updateMetadata(previous: self.baggage, latest: self.baggage)
+        }
     }
 
     init(context baggage: Baggage, logger: Logger) {
         self.baggage = baggage
         self._logger = logger
-    }
-
-    subscript<Key: BaggageKey>(key: Key.Type) -> Key.Value? {
-        get {
-            return self.baggage[key]
-        }
-        set {
-            self.baggage[key] = newValue
-        }
-    }
-
-    func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
-        return try self.baggage.forEach(body)
+        self._logger.updateMetadata(previous: .topLevel, latest: baggage)
     }
 }
 
 struct CoolFrameworkContext: BaggageContext.Context {
-    private var _logger: Logger = Logger(label: "some frameworks logger")
+    var baggage: Baggage {
+        willSet {
+            self.logger.updateMetadata(previous: self.baggage, latest: newValue)
+        }
+    }
     var logger: Logger {
-        return self._logger.with(self.baggage)
+        didSet {
+            self.logger.updateMetadata(previous: self.baggage, latest: self.baggage)
+        }
     }
 
-    var baggage: Baggage = .topLevel
-
     // framework context defines other values as well
-    let frameworkField: String = ""
+    let frameworkField: String
 
     // including the popular eventLoop
     let eventLoop: FakeEventLoop
 
-    subscript<Key: BaggageKey>(key: Key.Type) -> Key.Value? {
-        return self.baggage[key]
+    init() {
+        self.baggage = .topLevel
+        self.logger = Logger(label: "some-framework-logger")
+        self.eventLoop = FakeEventLoop()
+        self.frameworkField = ""
+        self.logger.updateMetadata(previous: .topLevel, latest: self.baggage)
     }
 
     func forEachBaggageItem(_ body: (AnyBaggageKey, Any) throws -> Void) rethrows {
