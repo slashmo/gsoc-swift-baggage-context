@@ -178,6 +178,11 @@ extension Baggage {
         }
     }
 
+    /// Number of contained baggage items.
+    public var count: Int {
+        return self._storage.count
+    }
+
     /// Calls the given closure for each item contained in the underlying `Baggage`.
     ///
     /// Order of those invocations is NOT guaranteed and should not be relied on.
@@ -201,7 +206,7 @@ extension Baggage: CustomStringConvertible {
     }
 }
 
-/// Carried automatically by a "to do" baggage context.
+/// Carried automatically by a "to do" baggage.
 /// It can be used to track where a context originated and which "to do" context must be fixed into a real one to avoid this.
 public struct TODOLocation {
     /// Source file location where the to-do `Baggage` was created

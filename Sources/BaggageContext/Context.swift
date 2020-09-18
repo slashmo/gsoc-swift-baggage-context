@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Baggage
+@_exported import Baggage
 import Logging
 
 // ==== ----------------------------------------------------------------------------------------------------------------
@@ -79,27 +79,41 @@ public struct DefaultContext: Context {
     /// Baggage values are different from plain logging metadata in that they are intended to be
     /// carried across process and node boundaries (serialized and deserialized) and are made
     /// available to instruments using `swift-distributed-tracing`.
-    public var baggage: Baggage
-
-    public var logger: Logger {
-        get {
-            return self._logger.with(self.baggage)
-        }
-        set {
-            self._logger = newValue
+    public var baggage: Baggage {
+        willSet {
+            // every time the baggage changes, we need to update the logger;
+            // values removed from the baggage are also removed from the logger metadata.
+            //
+            // TODO: optimally, logger could some day accept baggage directly, without ever having to map it into `Metadata`,
+            //       then we would not have to make those mappings at all and passing the logger.with(baggage) would be cheap.
+            //
+            // This implementation generally is a tradeoff, we bet on logging being performed far more often than baggage
+            // being changed; We do this logger update eagerly, so even if we never log anything, the logger has to be updated.
+            // Systems which never or rarely log will take the hit for it here. The alternative tradeoff to map lazily as `logger.with(baggage)`
+            // is available as well, but users would have to build their own context and specifically make use of that then -- that approach
+            // allows to not pay the mapping cost up front, but only if a log statement is made (but then again, the cost is paid every time we log something).
+            self.logger.update(previous: self.baggage, latest: newValue)
         }
     }
 
-    private var _logger: Logger
+    public var logger: Logger {
+        didSet {
+            // Since someone could have completely replaced the logger (not just changed the log level),
+            // we have to update the baggage again, since perhaps the new logger has empty metadata.
+            self.logger.update(previous: .background, latest: self.baggage)
+        }
+    }
 
-    public init(baggage: Baggage, logger underlying: Logger) {
+    public init(baggage: Baggage, logger: Logger) {
         self.baggage = baggage
-        self._logger = underlying
+        self.logger = logger
+        self.logger.update(previous: .background, latest: baggage)
     }
 
     public init<C>(context: C) where C: Context {
-        self._logger = context.logger
         self.baggage = context.baggage
+        self.logger = context.logger
+        self.logger.update(previous: .background, latest: self.baggage)
     }
 }
 
@@ -112,7 +126,7 @@ extension DefaultContext {
     /// - Parameter logger: Logger that should replace the underlying logger of this context.
     /// - Returns: new context, with the passed in `logger`
     public func withLogger(_ function: (inout Logger) -> Void) -> DefaultContext {
-        var logger = self._logger
+        var logger = self.logger
         function(&logger)
         return .init(baggage: self.baggage, logger: logger)
     }

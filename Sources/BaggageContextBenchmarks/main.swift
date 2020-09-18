@@ -37,5 +37,6 @@ private func registerBenchmark(_ name: String, _ function: @escaping (Int) -> Vo
 }
 
 registerBenchmark(BaggagePassingBenchmarks)
+registerBenchmark(BaggageLoggingBenchmarks)
 
 main()

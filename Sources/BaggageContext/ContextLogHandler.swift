@@ -29,6 +29,21 @@ extension Logger {
             factory: { _ in BaggageMetadataLogHandler(logger: self, baggage: baggage) }
         )
     }
+
+    public mutating func update(previous: Baggage, latest: Baggage) {
+        var removedKeys: Set<AnyBaggageKey> = []
+        removedKeys.reserveCapacity(previous.count)
+        previous.forEach { key, _ in
+            removedKeys.insert(key)
+        }
+        latest.forEach { key, value in
+            removedKeys.remove(key)
+            self[metadataKey: key.name] = "\(value)"
+        }
+        removedKeys.forEach { removedKey in
+            self[metadataKey: removedKey.name] = nil
+        }
+    }
 }
 
 // ==== ----------------------------------------------------------------------------------------------------------------

@@ -25,4 +25,7 @@ public enum BenchmarkCategory: String {
 
     // Explicit skip marker
     case skip
+
+    // --- custom ---
+    case logging
 }
