@@ -209,5 +209,5 @@ private enum TestIDKey: Baggage.Key {
 private enum SecondTestIDKey: Baggage.Key {
     typealias Value = String
 
-    static let name: String? = "secondIDExplicitlyNamed"
+    static let nameOverride: String? = "secondIDExplicitlyNamed"
 }

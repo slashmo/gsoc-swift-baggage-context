@@ -84,7 +84,7 @@ private enum TestIDKey: Baggage.Key {
 }
 
 private extension Baggage {
-    public internal(set) var testID: Int? {
+    var testID: Int? {
         get {
             return self[TestIDKey.self]
         }
@@ -97,5 +97,5 @@ private extension Baggage {
 private enum SecondTestIDKey: Baggage.Key {
     typealias Value = String
 
-    static let name: String? = "ExplicitKeyName"
+    static let nameOverride: String? = "ExplicitKeyName"
 }
