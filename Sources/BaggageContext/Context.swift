@@ -170,6 +170,16 @@ extension DefaultContext {
     ///
     /// - Parameter logger: Logger that should replace the underlying logger of this context.
     /// - Returns: new context, with the passed in `logger`
+    public func withLogger(_ logger: Logger) -> DefaultContext {
+        var copy = self
+        copy.logger = logger
+        return copy
+    }
+
+    /// Fluent API allowing for modification of underlying logger when passing the context to other functions.
+    ///
+    /// - Parameter logger: Logger that should replace the underlying logger of this context.
+    /// - Returns: new context, with the passed in `logger`
     public func withLogger(_ function: (inout Logger) -> Void) -> DefaultContext {
         var logger = self.logger
         function(&logger)
