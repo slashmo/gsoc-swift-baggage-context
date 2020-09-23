@@ -185,19 +185,19 @@ struct FakeEventLoop {}
 private extension Baggage {
     var testID: Int? {
         get {
-            return self[_key: TestIDKey.self]
+            return self[TestIDKey.self]
         }
         set {
-            self[_key: TestIDKey.self] = newValue
+            self[TestIDKey.self] = newValue
         }
     }
 
     var secondTestID: String? {
         get {
-            return self[_key: SecondTestIDKey.self]
+            return self[SecondTestIDKey.self]
         }
         set {
-            self[_key: SecondTestIDKey.self] = newValue
+            self[SecondTestIDKey.self] = newValue
         }
     }
 }

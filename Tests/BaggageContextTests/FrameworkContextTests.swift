@@ -21,7 +21,7 @@ final class FrameworkBaggageContextTests: XCTestCase {
         var context = TestFrameworkContext()
 
         // mutate baggage context directly
-        context.baggage[_key: OtherKey.self] = "test"
+        context.baggage[OtherKey.self] = "test"
         XCTAssertEqual(context.baggage.otherKey, "test")
     }
 
@@ -64,10 +64,10 @@ private enum TestKey: Baggage.Key {
 extension Baggage {
     var testKey: Int? {
         get {
-            return self[_key: TestKey.self]
+            return self[TestKey.self]
         }
         set {
-            self[_key: TestKey.self] = newValue
+            self[TestKey.self] = newValue
         }
     }
 }
@@ -79,10 +79,10 @@ private enum OtherKey: Baggage.Key {
 extension Baggage {
     var otherKey: String? {
         get {
-            return self[_key: OtherKey.self]
+            return self[OtherKey.self]
         }
         set {
-            self[_key: OtherKey.self] = newValue
+            self[OtherKey.self] = newValue
         }
     }
 }

@@ -63,9 +63,9 @@ public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
         runFunction: { iters in
             let logger = Logger(label: "0_log_noop_loggerWithBaggage_small", factory: { _ in SwiftLogNoOpLogHandler() })
             var baggage = Baggage.topLevel
-            baggage[_key: TestK1.self] = "k1-value"
-            baggage[_key: TestK2.self] = "k2-value"
-            baggage[_key: TestK3.self] = "k3-value"
+            baggage[TestK1.self] = "k1-value"
+            baggage[TestK2.self] = "k2-value"
+            baggage[TestK3.self] = "k3-value"
             log_loggerWithBaggage(logger: logger, baggage: baggage, iters: iters)
         },
         tags: [
@@ -78,9 +78,9 @@ public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
         name: pad("BaggageLoggingBenchmarks.0_log_noop_context_with_baggage_small"),
         runFunction: { iters in
             var context = DefaultContext.topLevel(logger: Logger(label: "0_log_noop_context_with_baggage_small", factory: { _ in SwiftLogNoOpLogHandler() }))
-            context.baggage[_key: TestK1.self] = "k1-value"
-            context.baggage[_key: TestK2.self] = "k2-value"
-            context.baggage[_key: TestK3.self] = "k3-value"
+            context.baggage[TestK1.self] = "k1-value"
+            context.baggage[TestK2.self] = "k2-value"
+            context.baggage[TestK3.self] = "k3-value"
             log_throughContext(context: context, iters: iters)
         },
         tags: [
@@ -126,9 +126,9 @@ public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
         runFunction: { iters in
             let logger = Logger(label: "1_log_real_loggerWithBaggage_small", factory: StreamLogHandler.standardError)
             var baggage = Baggage.topLevel
-            baggage[_key: TestK1.self] = "k1-value"
-            baggage[_key: TestK2.self] = "k2-value"
-            baggage[_key: TestK3.self] = "k3-value"
+            baggage[TestK1.self] = "k1-value"
+            baggage[TestK2.self] = "k2-value"
+            baggage[TestK3.self] = "k3-value"
             log_loggerWithBaggage(logger: logger, baggage: baggage, iters: iters)
         },
         tags: [
@@ -141,9 +141,9 @@ public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
         name: pad("BaggageLoggingBenchmarks.1_log_real_context_with_baggage_small"),
         runFunction: { iters in
             var context = DefaultContext.topLevel(logger: Logger(label: "1_log_real_context_with_baggage_small", factory: StreamLogHandler.standardError))
-            context.baggage[_key: TestK1.self] = "k1-value"
-            context.baggage[_key: TestK2.self] = "k2-value"
-            context.baggage[_key: TestK3.self] = "k3-value"
+            context.baggage[TestK1.self] = "k1-value"
+            context.baggage[TestK2.self] = "k2-value"
+            context.baggage[TestK3.self] = "k3-value"
             log_throughContext(context: context, iters: iters)
         },
         tags: [
@@ -189,9 +189,9 @@ public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
         runFunction: { iters in
             let logger = Logger(label: "2_log_real-trace_loggerWithBaggage_small", factory: StreamLogHandler.standardError)
             var baggage = Baggage.topLevel
-            baggage[_key: TestK1.self] = "k1-value"
-            baggage[_key: TestK2.self] = "k2-value"
-            baggage[_key: TestK3.self] = "k3-value"
+            baggage[TestK1.self] = "k1-value"
+            baggage[TestK2.self] = "k2-value"
+            baggage[TestK3.self] = "k3-value"
             log_loggerWithBaggage_trace(logger: logger, baggage: baggage, iters: iters)
         },
         tags: [
@@ -204,9 +204,9 @@ public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
         name: pad("BaggageLoggingBenchmarks.2_log_real-trace_context_with_baggage_small"),
         runFunction: { iters in
             var context = DefaultContext.topLevel(logger: Logger(label: "2_log_real-trace_context_with_baggage_small", factory: StreamLogHandler.standardError))
-            context.baggage[_key: TestK1.self] = "k1-value"
-            context.baggage[_key: TestK2.self] = "k2-value"
-            context.baggage[_key: TestK3.self] = "k3-value"
+            context.baggage[TestK1.self] = "k1-value"
+            context.baggage[TestK2.self] = "k2-value"
+            context.baggage[TestK3.self] = "k3-value"
             log_throughContext_trace(context: context, iters: iters)
         },
         tags: [
@@ -223,9 +223,9 @@ public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
         name: pad("BaggageLoggingBenchmarks.3_log_real_small_context_materializeOnce"),
         runFunction: { iters in
             var context = DefaultContext.topLevel(logger: Logger(label: "3_log_real_context_materializeOnce", factory: StreamLogHandler.standardError))
-            context.baggage[_key: TestK1.self] = "k1-value"
-            context.baggage[_key: TestK2.self] = "k2-value"
-            context.baggage[_key: TestK3.self] = "k3-value"
+            context.baggage[TestK1.self] = "k1-value"
+            context.baggage[TestK2.self] = "k2-value"
+            context.baggage[TestK3.self] = "k3-value"
             log_materializeOnce(context: context, iters: iters)
         },
         tags: [
@@ -238,9 +238,9 @@ public let BaggageLoggingBenchmarks: [BenchmarkInfo] = [
         name: pad("BaggageLoggingBenchmarks.3_log_real-trace_small_context_materializeOnce"),
         runFunction: { iters in
             var context = DefaultContext.topLevel(logger: Logger(label: "3_log_real_context_materializeOnce", factory: StreamLogHandler.standardError))
-            context.baggage[_key: TestK1.self] = "k1-value"
-            context.baggage[_key: TestK2.self] = "k2-value"
-            context.baggage[_key: TestK3.self] = "k3-value"
+            context.baggage[TestK1.self] = "k1-value"
+            context.baggage[TestK2.self] = "k2-value"
+            context.baggage[TestK3.self] = "k3-value"
             log_materializeOnce_trace(context: context, iters: iters)
         },
         tags: [
@@ -353,27 +353,27 @@ private enum TestKD1: BaggageKey {
 
 extension Baggage {
     fileprivate var k1: TestK1.Value? {
-        get { return self[_key: TestK1.self] }
-        set { self[_key: TestK1.self] = newValue }
+        get { return self[TestK1.self] }
+        set { self[TestK1.self] = newValue }
     }
 
     fileprivate var k2: TestK2.Value? {
-        get { return self[_key: TestK2.self] }
-        set { self[_key: TestK2.self] = newValue }
+        get { return self[TestK2.self] }
+        set { self[TestK2.self] = newValue }
     }
 
     fileprivate var k3: TestK3.Value? {
-        get { return self[_key: TestK3.self] }
-        set { self[_key: TestK3.self] = newValue }
+        get { return self[TestK3.self] }
+        set { self[TestK3.self] = newValue }
     }
 
     fileprivate var k4: TestK4.Value? {
-        get { return self[_key: TestK4.self] }
-        set { self[_key: TestK4.self] = newValue }
+        get { return self[TestK4.self] }
+        set { self[TestK4.self] = newValue }
     }
 
     fileprivate var kd1: TestKD1.Value? {
-        get { return self[_key: TestKD1.self] }
-        set { self[_key: TestKD1.self] = newValue }
+        get { return self[TestKD1.self] }
+        set { self[TestKD1.self] = newValue }
     }
 }

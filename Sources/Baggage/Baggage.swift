@@ -33,9 +33,9 @@
 ///     extension Baggage {
 ///       var testID: String? {
 ///         get {
-///           self[_key: TestIDKey.self]
+///           self[TestIDKey.self]
 ///         } set {
-///           self[_key: TestIDKey.self] = newValue
+///           self[TestIDKey.self] = newValue
 ///         }
 ///       }
 ///     }
@@ -130,14 +130,14 @@ extension Baggage {
         #if BAGGAGE_CRASH_TODOS
         fatalError("BAGGAGE_CRASH_TODOS: at \(file):\(line) (function \(function)), reason: \(reason)")
         #else
-        context[_key: TODOKey.self] = .init(file: file, line: line)
+        context[TODOKey.self] = .init(file: file, line: line)
         return context
         #endif
     }
 
     private enum TODOKey: BaggageKey {
         typealias Value = TODOLocation
-        static var name: String? {
+        static var nameOverride: String? {
             return "todo"
         }
     }
@@ -154,12 +154,12 @@ extension Baggage {
     ///     }
     ///
     ///     extension Baggage {
-    ///       var testID: TestID? {
+    ///       public internal(set) var testID: TestID? {
     ///         get {
-    ///           self[_key: TestIDKey.self]
+    ///           self[TestIDKey.self]
     ///         }
     ///         set {
-    ///           self[_key: TestIDKey.self] = newValue
+    ///           self[TestIDKey.self] = newValue
     ///         }
     ///       }
     ///     }
@@ -169,7 +169,7 @@ extension Baggage {
     ///
     /// Note that specific baggage and context types MAY (and usually do), offer also a way to set baggage values,
     /// however in the most general case it is not required, as some frameworks may only be able to offer reading.
-    public subscript<Key: BaggageKey>(_key key: Key.Type) -> Key.Value? {
+    public subscript<Key: BaggageKey>(_ key: Key.Type) -> Key.Value? {
         get {
             guard let value = self._storage[AnyBaggageKey(key)] else { return nil }
             // safe to force-cast as this subscript is the only way to set a value.

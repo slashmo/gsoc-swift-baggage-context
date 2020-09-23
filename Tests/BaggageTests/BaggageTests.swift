@@ -19,13 +19,13 @@ final class BaggageTests: XCTestCase {
         let testID = 42
 
         var baggage = Baggage.topLevel
-        XCTAssertNil(baggage[_key: TestIDKey.self])
+        XCTAssertNil(baggage[TestIDKey.self])
 
-        baggage[_key: TestIDKey.self] = testID
-        XCTAssertEqual(baggage[_key: TestIDKey.self], testID)
+        baggage[TestIDKey.self] = testID
+        XCTAssertEqual(baggage[TestIDKey.self], testID)
 
-        baggage[_key: TestIDKey.self] = nil
-        XCTAssertNil(baggage[_key: TestIDKey.self])
+        baggage[TestIDKey.self] = nil
+        XCTAssertNil(baggage[TestIDKey.self])
     }
 
     func testRecommendedConvenienceExtension() {
@@ -37,7 +37,7 @@ final class BaggageTests: XCTestCase {
         baggage.testID = testID
         XCTAssertEqual(baggage.testID, testID)
 
-        baggage[_key: TestIDKey.self] = nil
+        baggage[TestIDKey.self] = nil
         XCTAssertNil(baggage.testID)
     }
 
@@ -55,7 +55,7 @@ final class BaggageTests: XCTestCase {
     func testMultiKeysBaggageDescription() {
         var baggage = Baggage.topLevel
         baggage.testID = 42
-        baggage[_key: SecondTestIDKey.self] = "test"
+        baggage[SecondTestIDKey.self] = "test"
 
         let description = String(describing: baggage)
         XCTAssert(description.starts(with: "Baggage(keys: ["), "Was: \(description)")
@@ -71,24 +71,11 @@ final class BaggageTests: XCTestCase {
         // the to-do context can be used to record intentions for why a context could not be passed through
         let context = Baggage.TODO("#1245 Some other library should be adjusted to pass us context")
         _ = context // avoid "not used" warning
-
-        // TODO: Can't work with protocols; re-consider the entire carrier approach... Context being a Baggage + Logger, and a specific type.
-//        func take(context: BaggageContextProtocol) {
-//            _ = context // ignore
-//        }
-//        take(context: .TODO("pass from request instead"))
     }
 
-    func test_todo_empty() {
+    func test_topLevel() {
         let context = Baggage.topLevel
         _ = context // avoid "not used" warning
-
-        // TODO: Can't work with protocols; re-consider the entire carrier approach... Context being a Baggage + Logger, and a specific type.
-        // static member 'empty' cannot be used on protocol metatype 'BaggageContextProtocol.Protocol'
-//        func take(context: BaggageContextProtocol) {
-//            _ = context // ignore
-//        }
-//        take(context: .topLevel)
     }
 }
 
@@ -97,12 +84,12 @@ private enum TestIDKey: Baggage.Key {
 }
 
 private extension Baggage {
-    var testID: Int? {
+    public internal(set) var testID: Int? {
         get {
-            return self[_key: TestIDKey.self]
+            return self[TestIDKey.self]
         }
         set {
-            self[_key: TestIDKey.self] = newValue
+            self[TestIDKey.self] = newValue
         }
     }
 }
