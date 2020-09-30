@@ -47,13 +47,13 @@
 /// ## Usage
 /// Using a baggage container is fairly straight forward, as it boils down to using the prepared computed properties:
 ///
-///     var context = Baggage.topLevel
+///     var baggage = Baggage.topLevel
 ///     // set a new value
-///     context.testID = "abc"
+///     baggage.testID = "abc"
 ///     // retrieve a stored value
-///     let testID = context.testID ?? "default"
+///     let testID = baggage.testID ?? "default"
 ///     // remove a stored value
-///     context.testIDKey = nil
+///     baggage.testIDKey = nil
 ///
 /// Note that normally a baggage should not be "created" ad-hoc by user code, but rather it should be passed to it from
 /// a runtime. For example, when working in an HTTP server framework, it is most likely that the baggage is already passed
