@@ -284,7 +284,7 @@ func log_loggerWithBaggage(logger: Logger, baggage: Baggage, iters remaining: In
 }
 
 @inline(never)
-func log_throughContext(context: Context, iters remaining: Int) {
+func log_throughContext(context: BaggageContext, iters remaining: Int) {
     for _ in 0 ..< remaining {
         context.logger.warning(message)
     }
@@ -298,14 +298,14 @@ func log_loggerWithBaggage_trace(logger: Logger, baggage: Baggage, iters remaini
 }
 
 @inline(never)
-func log_throughContext_trace(context: Context, iters remaining: Int) {
+func log_throughContext_trace(context: BaggageContext, iters remaining: Int) {
     for _ in 0 ..< remaining {
         context.logger.trace(message)
     }
 }
 
 @inline(never)
-func log_materializeOnce_trace(context: Context, iters remaining: Int) {
+func log_materializeOnce_trace(context: BaggageContext, iters remaining: Int) {
     var logger = context.logger
     context.baggage.forEach { key, value in
         logger[metadataKey: key.name] = "\(value)"
@@ -317,7 +317,7 @@ func log_materializeOnce_trace(context: Context, iters remaining: Int) {
 }
 
 @inline(never)
-func log_materializeOnce(context: Context, iters remaining: Int) {
+func log_materializeOnce(context: BaggageContext, iters remaining: Int) {
     var logger = context.logger
     context.baggage.forEach { key, value in
         logger[metadataKey: key.name] = "\(value)"

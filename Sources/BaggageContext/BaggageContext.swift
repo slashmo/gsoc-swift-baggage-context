@@ -17,7 +17,7 @@ import Logging
 // ==== ----------------------------------------------------------------------------------------------------------------
 // MARK: Context Protocol
 
-/// The `ContextProtocol` MAY be adopted by specific "framework contexts" such as e.g. `CoolFramework.Context` in
+/// The `BaggageContext` MAY be adopted by specific "framework contexts" such as e.g. `CoolFramework.Context` in
 /// order to allow users to pass such context directly to libraries accepting any context.
 ///
 /// This allows frameworks and library authors to offer APIs which compose more easily.
@@ -29,9 +29,9 @@ import Logging
 /// and also for their user's sanity, as a reference semantics context type can be very confusing to use when shared
 /// between multiple threads, as often is the case in server side environments.
 ///
-/// It is STRONGLY encouraged to use the `DefaultContext` as inspiration for a correct implementation of a `Context`,
+/// It is STRONGLY encouraged to use the `DefaultContext` as inspiration for a correct implementation of a `BaggageContext`,
 /// as the relationship between `Logger` and `Baggage` can be tricky to wrap your head around at first.
-public protocol Context {
+public protocol BaggageContext {
     /// Get the `Baggage` container.
     ///
     /// ### Implementation notes
@@ -91,7 +91,7 @@ public protocol Context {
     var logger: Logger { get set }
 }
 
-/// A default `Context` type.
+/// A default `BaggageContext` type.
 ///
 /// It is a carrier of contextual `Baggage` and related `Logger`, allowing to log and trace throughout a system.
 ///
@@ -106,12 +106,12 @@ public protocol Context {
 ///
 /// ### Accepting context types in APIs
 ///
-/// It is preferred to accept values of `ContextProtocol` in library APIs, as this yields a more flexible API shape,
+/// It is preferred to accept values of `BaggageContext` in library APIs, as this yields a more flexible API shape,
 /// to which other libraries/frameworks may pass their specific context objects.
 ///
 /// - SeeAlso: `Baggage` from the Baggage module.
 /// - SeeAlso: `Logger` from the SwiftLog package.
-public struct DefaultContext: Context {
+public struct DefaultContext: BaggageContext {
     /// The `Baggage` carried with this context.
     /// It's values will automatically be made available to the `logger` as metadata when logging.
     ///
@@ -155,7 +155,7 @@ public struct DefaultContext: Context {
         self._logger.updateMetadata(previous: .topLevel, latest: baggage)
     }
 
-    public init<C>(context: C) where C: Context {
+    public init<Context>(context: Context) where Context: BaggageContext {
         self.baggage = context.baggage
         self._logger = context.logger
         self._logger.updateMetadata(previous: .topLevel, latest: self.baggage)
