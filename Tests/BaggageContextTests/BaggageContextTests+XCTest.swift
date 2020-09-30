@@ -25,13 +25,10 @@ extension BaggageContextTests {
    @available(*, deprecated, message: "not actually deprecated. Just deprecated to allow deprecated tests (which test deprecated functionality) without warnings")
    static var allTests : [(String, (BaggageContextTests) -> () throws -> Void)] {
       return [
-                ("testSubscriptAccess", testSubscriptAccess),
-                ("testRecommendedConvenienceExtension", testRecommendedConvenienceExtension),
-                ("testEmptyBaggageDescription", testEmptyBaggageDescription),
-                ("testSingleKeyBaggageDescription", testSingleKeyBaggageDescription),
-                ("testMultiKeysBaggageDescription", testMultiKeysBaggageDescription),
-                ("test_todo_context", test_todo_context),
-                ("test_todo_empty", test_todo_empty),
+                ("test_ExampleFrameworkContext_dumpBaggage", test_ExampleFrameworkContext_dumpBaggage),
+                ("test_ExampleFrameworkContext_log_withBaggage", test_ExampleFrameworkContext_log_withBaggage),
+                ("test_DefaultContext_log_withBaggage", test_DefaultContext_log_withBaggage),
+                ("test_ExampleFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata", test_ExampleFrameworkContext_log_prefersBaggageContextOverExistingLoggerMetadata),
            ]
    }
 }
