@@ -24,7 +24,7 @@ final class BaggageContextTests: XCTestCase {
         baggage.testID = 42
         let context = ExampleFrameworkContext(context: baggage, logger: logger)
 
-        func frameworkFunctionDumpsBaggage(param: String, context: Context) -> String {
+        func frameworkFunctionDumpsBaggage(param: String, context: BaggageContext) -> String {
             var s = ""
             context.baggage.forEach { key, item in
                 s += "\(key.name): \(item)\n"
@@ -123,7 +123,7 @@ final class BaggageContextTests: XCTestCase {
     }
 }
 
-struct ExampleFrameworkContext: BaggageContext.Context {
+struct ExampleFrameworkContext: BaggageContext {
     var baggage: Baggage {
         willSet {
             self._logger.updateMetadata(previous: self.baggage, latest: newValue)
@@ -148,7 +148,7 @@ struct ExampleFrameworkContext: BaggageContext.Context {
     }
 }
 
-struct CoolFrameworkContext: BaggageContext.Context {
+struct CoolFrameworkContext: BaggageContext {
     var baggage: Baggage {
         willSet {
             self.logger.updateMetadata(previous: self.baggage, latest: newValue)
