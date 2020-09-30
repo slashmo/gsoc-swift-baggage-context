@@ -23,9 +23,9 @@ so that's what you'd import in your Swift files.
 ```swift
 dependencies: [
   .package(
-    name: "swift-baggage-context",
+    name: "swift-context",
     url: "https://github.com/slashmo/gsoc-swift-baggage-context.git",
-    from: "0.3.0"
+    from: "0.5.0"
   )
 ]
 ```
