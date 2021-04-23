@@ -5,6 +5,8 @@
 [![Swift 5.0](https://img.shields.io/badge/Swift-5.0-ED523F.svg?style=flat)](https://swift.org/download/)
 [![CI](https://github.com/slashmo/gsoc-swift-baggage-context/workflows/CI/badge.svg)](https://github.com/slashmo/gsoc-swift-baggage-context/actions?query=workflow%3ACI)
 
+### 🚌 This repo was moved to [`apple/swift-distributed-tracing-baggage-core`](https://github.com/apple/swift-distributed-tracing-baggage-core)
+
 `BaggageContext` is a minimal (zero-dependency) "context" library meant to "carry" baggage (metadata) for cross-cutting
 tools such as tracers. It is purposefully not tied to any specific use-case (in the spirit of the
 [Tracing Plane paper](https://cs.brown.edu/~jcmace/papers/mace18universal.pdf)'s BaggageContext). However, it should
